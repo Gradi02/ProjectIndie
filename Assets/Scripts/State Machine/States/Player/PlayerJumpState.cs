@@ -5,7 +5,10 @@ public class PlayerJumpState : StateBase<PlayerController>
     public override void Enter()
     {
         base.Enter();
-        owner.animator.Play(owner.animationsCodes[typeof(PlayerJumpState)]);
+        if (clip != null)
+            owner.animator.Play(clip.name);
+        else
+            Debug.Log($"Animation from state {this} is null!");
         owner.rb.linearVelocity = new Vector2(owner.rb.linearVelocity.x, owner.jumpForce);
     }
 
@@ -13,11 +16,8 @@ public class PlayerJumpState : StateBase<PlayerController>
     {
         base.Execute();
 
-
-        if (!CanExitState()) return;
-
         // Sprawdü warunki przejúcia
-        if (owner.IsGrounded() && owner.rb.linearVelocity.y < 0)
+        if (!owner.IsGrounded() && owner.rb.linearVelocity.y < 0)
         {
             stateMachine.ChangeState(typeof(PlayerFallState));
         }
@@ -25,6 +25,13 @@ public class PlayerJumpState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerIdleState));
         }
+    }
+
+    public override void FixedExecute()
+    {
+        base.FixedExecute();
+
+        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * owner.walkSpeed, owner.rb.linearVelocity.y);
     }
 
     public override void Exit()

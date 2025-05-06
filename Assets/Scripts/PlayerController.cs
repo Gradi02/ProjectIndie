@@ -1,20 +1,20 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System;
+using System.Linq;
 
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent (typeof(BoxCollider2D))]
+[RequireComponent(typeof(BoxCollider2D))]
 [RequireComponent(typeof(Animator))]
 public class PlayerController : MonoBehaviour
 {
     private PlayerInputHandler inputHandler => PlayerInputHandler.Instance;
-
+    public string cs;
 
     [Header("Movement Stats")]
-    [SerializeField] public float walkSpeed { get; private set; } = 5f;
+    [SerializeField] public float walkSpeed { get; private set; } = 10f;
     [SerializeField] public float sprintMultiplier { get; private set; } = 1.5f;
-    [SerializeField] public float jumpForce { get; private set; } = 5f;
+    [SerializeField] public float jumpForce { get; private set; } = 8f;
 
 
     [Header("References")]
@@ -27,7 +27,6 @@ public class PlayerController : MonoBehaviour
 
     // Maszyna Stanów
     private StateMachine<PlayerController> stateMachine;
-    public Dictionary<Type, string> animationsCodes;
 
     // Referencja dla stanów
     public Animator animator { get; private set; }
@@ -38,63 +37,29 @@ public class PlayerController : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
-        stateMachine = new StateMachine<PlayerController>();
 
-        // Deklaracja mo¿liwych stanów gracza
-        var states = new Dictionary<Type, StateBase<PlayerController>>
+        // Pobieranie mo¿liwych stanów gracza
+        StateBase<PlayerController>[] stateComponents = GetComponentsInChildren<StateBase<PlayerController>>();
+        if (stateComponents.Length == 0)
         {
-            { typeof(PlayerIdleState), new PlayerIdleState() },
-            { typeof(PlayerWalkState), new PlayerWalkState() },
-            { typeof(PlayerJumpState), new PlayerJumpState() },
-            { typeof(PlayerFallState), new PlayerFallState() }
-        };
-
-        // Inicjalizacja stanów
-        foreach (var state in states.Values)
-        {
-            state.Initialize(stateMachine, this);
+            Debug.LogError($"No StateBase<PlayerController> components found on {gameObject.name}. StateMachine cannot be initialized.", this);
+            return;
         }
 
         // Inicjalizacja maszyny
-        stateMachine.Initialize(this, states, typeof(PlayerIdleState));
+        stateMachine = new StateMachine<PlayerController>(this, stateComponents.ToList());
     }
-
-    /*void Update()
-    {
-        if (isDashing) return;
-
-        horizontal = inputHandler.moveInput.x;
-
-        if (inputHandler.jumpTrigger && IsGrounded())
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            isJumping = true;
-        }
-
-        if (isJumping && IsGrounded() && rb.linearVelocity.y < 0.01f)
-        {
-            StartCoroutine(EndJump());
-        }
-
-        if (inputHandler.jumpTrigger && rb.linearVelocity.y > 0f)
-        {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * 0.4f);
-        }
-
-        Flip();
-    }*/
-
-    /*    private void FixedUpdate()
-        {
-            if (isDashing) return;
-
-            float walkSpeed = inputHandler.sprintSpeed > 0f ? speed * sprintMultiplier : speed;
-            rb.linearVelocity = new Vector2(horizontal * walkSpeed, rb.linearVelocity.y);
-        }*/
 
     private void Update()
     {
+        stateMachine?.OnUpdate();
+        cs = stateMachine.currentState.name;
         Flip();
+    }
+
+    private void FixedUpdate()
+    {
+        stateMachine?.OnFixedUpdate();
     }
 
     private void Flip()
@@ -107,7 +72,6 @@ public class PlayerController : MonoBehaviour
             transform.localScale = localScale;
         }
     }
-
 
 
     public bool IsGrounded()

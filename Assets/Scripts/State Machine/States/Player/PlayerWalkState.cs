@@ -2,19 +2,20 @@ using UnityEngine;
 
 public class PlayerWalkState : StateBase<PlayerController>
 {
-    private PlayerInputHandler inputHandler => PlayerInputHandler.Instance;
-
     public override void Enter()
     {
         base.Enter();
-        owner.animator.Play(owner.animationsCodes[typeof(PlayerWalkState)]);
+
+        if (clip != null)
+            owner.animator.Play(clip.name);
+        else
+            Debug.Log($"Animation from state {this} is null!");
     }
 
     public override void Execute()
     {
         base.Execute();
 
-        if (!CanExitState()) return;
 
         // Sprawdü warunki przejúcia
         if(!owner.IsGrounded())

@@ -1,11 +1,16 @@
 using UnityEngine;
 
+
+[StartingState]
 public class PlayerIdleState : StateBase<PlayerController>
 {
     public override void Enter()
     {
         base.Enter();
-        owner.animator.Play(owner.animationsCodes[typeof(PlayerIdleState)]);
+        if (clip != null)
+            owner.animator.Play(clip.name);
+        else
+            Debug.Log($"Animation from state {this} is null!");
         owner.rb.linearVelocity = Vector2.zero;
     }
 
@@ -13,7 +18,7 @@ public class PlayerIdleState : StateBase<PlayerController>
     {
         base.Execute();
 
-        if (!CanExitState()) return;
+
 
         // Sprawdü warunki przejúcia
         if (owner.IsJumpPressed() && owner.IsGrounded())
@@ -27,6 +32,14 @@ public class PlayerIdleState : StateBase<PlayerController>
             else
                 stateMachine.ChangeState(typeof(PlayerFallState));
         }
+    }
+
+    public override void FixedExecute()
+    {
+        base.FixedExecute();
+
+        float speed = owner.IsPlayerSprinting() ? owner.walkSpeed * owner.sprintMultiplier : owner.walkSpeed;
+        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * speed, owner.rb.linearVelocity.y);
     }
 
     public override void Exit()
