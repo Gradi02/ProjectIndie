@@ -36,6 +36,8 @@ public class PlayerInputHandler : MonoBehaviour
 
 
     public static PlayerInputHandler Instance { get; private set; }
+    private const string BINDINGS_KEY = "PlayerControlsBinding";
+
 
     private void Awake()
     {
@@ -104,5 +106,53 @@ public class PlayerInputHandler : MonoBehaviour
         interactAction.Disable();
         sprintAction.Disable();
         attackAction.Disable();
+    }
+
+
+    public void SaveControlOverrides()
+    {
+        if (playerControls == null)
+        {
+            Debug.LogError("InputActionAsset nie jest przypisany w InputSettingsManager!");
+            return;
+        }
+        
+        string bindingsJson = playerControls.SaveBindingOverridesAsJson();
+        PlayerPrefs.SetString(BINDINGS_KEY, bindingsJson);
+        PlayerPrefs.Save(); // Opcjonalnie: wymuœ zapis od razu
+
+        Debug.Log("Zapisano ustawienia sterowania.");
+    }
+
+    public void LoadControlOverrides()
+    {
+        if (playerControls == null)
+        {
+            Debug.LogError("InputActionAsset nie jest przypisany w InputSettingsManager!");
+            return;
+        }
+
+        if (PlayerPrefs.HasKey(BINDINGS_KEY))
+        {
+            string bindingsJson = PlayerPrefs.GetString(BINDINGS_KEY);
+            playerControls.LoadBindingOverridesFromJson(bindingsJson);
+
+            Debug.Log("Wczytano ustawienia sterowania.");
+        }
+        else
+        {
+            Debug.Log("Nie znaleziono zapisanych ustawieñ sterowania. U¿ywane s¹ domyœlne.");
+        }
+    }
+
+
+    /// <summary>
+    /// Funkcja do vibracji pada - nie wiem czy dzia³a narazie zostawiam takie cos
+    /// </summary>
+    /// <param name="lowFrequency"></param>
+    /// <param name="highFrequency"></param>
+    public void ShakeGamepad(float lowFrequency, float highFrequency)
+    {
+        Gamepad.current.SetMotorSpeeds(lowFrequency, highFrequency);
     }
 }
