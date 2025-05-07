@@ -15,12 +15,10 @@ public class PlayerFallState : StateBase<PlayerController>
     {
         base.Execute();
 
-
-
         // Sprawdü warunki przejúcia
         if (owner.IsGrounded())
         {
-            if (owner.GetPlayerVelocity() < 0.1f)
+            if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)
             {
                 stateMachine.ChangeState(typeof(PlayerIdleState));
             }
@@ -28,10 +26,6 @@ public class PlayerFallState : StateBase<PlayerController>
             {
                 stateMachine.ChangeState(typeof(PlayerWalkState));
             }
-        }
-        else if (owner.IsJumpPressed() && owner.IsGrounded())
-        {
-            stateMachine.ChangeState(typeof(PlayerJumpState));
         }
     }
 

@@ -16,17 +16,16 @@ public class PlayerWalkState : StateBase<PlayerController>
     {
         base.Execute();
 
-
         // Sprawdü warunki przejúcia
-        if(!owner.IsGrounded())
+        if (!owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));
         }
-        else if (owner.IsJumpPressed() && owner.IsGrounded())
+        else if (inputHandler.jumpTrigger)
         {
             stateMachine.ChangeState(typeof(PlayerJumpState));
         }
-        else if (owner.GetPlayerVelocity() < 0.1f)
+        else if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)                                                                             
         {
             stateMachine.ChangeState(typeof(PlayerIdleState));
         }
@@ -36,8 +35,7 @@ public class PlayerWalkState : StateBase<PlayerController>
     {
         base.FixedExecute();
 
-        float speed = owner.IsPlayerSprinting() ? owner.walkSpeed * owner.sprintMultiplier : owner.walkSpeed;
-        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * speed, owner.rb.linearVelocity.y);
+        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * owner.walkSpeed, owner.rb.linearVelocity.y);
     }
 
     public override void Exit()

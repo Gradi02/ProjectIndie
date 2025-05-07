@@ -17,13 +17,20 @@ public class PlayerJumpState : StateBase<PlayerController>
         base.Execute();
 
         // Sprawdü warunki przejúcia
-        if (!owner.IsGrounded() && owner.rb.linearVelocity.y < 0)
+        if (owner.rb.linearVelocity.y < 0 && !owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));
         }
         else if (owner.IsGrounded())
         {
-            stateMachine.ChangeState(typeof(PlayerIdleState));
+            if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)
+            {
+                stateMachine.ChangeState(typeof(PlayerIdleState));
+            }
+            else
+            {
+                stateMachine.ChangeState(typeof(PlayerWalkState));
+            }
         }
     }
 

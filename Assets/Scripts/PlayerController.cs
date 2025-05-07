@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
     public string cs;
 
     [Header("Movement Stats")]
-    [SerializeField] public float walkSpeed { get; private set; } = 10f;
+    [SerializeField] public float walkSpeed { get; private set; } = 5f;
     [SerializeField] public float sprintMultiplier { get; private set; } = 1.5f;
     [SerializeField] public float jumpForce { get; private set; } = 8f;
 
@@ -77,20 +77,5 @@ public class PlayerController : MonoBehaviour
     public bool IsGrounded()
     {
         return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
-    }
-
-    public bool IsJumpPressed()
-    {
-        return inputHandler.jumpTrigger;
-    }
-
-    public float GetPlayerVelocity()
-    {
-        return Mathf.Abs(rb.linearVelocity.magnitude);
-    }
-
-    public bool IsPlayerSprinting()
-    {
-        return inputHandler.sprintSpeed > 0f;
     }
 }

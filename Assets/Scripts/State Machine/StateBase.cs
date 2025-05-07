@@ -3,6 +3,7 @@ using UnityEngine;
 
 public abstract class StateBase<T> : MonoBehaviour where T : MonoBehaviour
 {
+    public const float MIN_MOVEMENT_THRESHOLD = 0.1f;
     protected PlayerInputHandler inputHandler => PlayerInputHandler.Instance;
 
     protected StateMachine<T> stateMachine;
