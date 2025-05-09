@@ -9,8 +9,7 @@ public abstract class StateBase<T> : MonoBehaviour where T : MonoBehaviour
     protected StateMachine<T> stateMachine;
     protected T owner; // W³aœciciel kontekstu
 
-    protected const float DELAY_BETWEEN_CHANGE_STATE = 0.05f; 
-    protected float timeToEnableExit = 0;
+    protected float timeInThisState = 0f;
 
     [SerializeField] protected AnimationClip clip;
 
@@ -22,10 +21,14 @@ public abstract class StateBase<T> : MonoBehaviour where T : MonoBehaviour
 
     public virtual void Enter() 
     {
-
+        timeInThisState = 0;
     }
 
-    public virtual void Execute() { }
-    public virtual void FixedExecute() { }
+    public virtual void Execute() 
+    {
+        timeInThisState += Time.deltaTime;
+    }
+    public virtual void FixedExecute() 
+    { }
     public virtual void Exit() { }
 }

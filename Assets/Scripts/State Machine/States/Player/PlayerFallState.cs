@@ -15,8 +15,21 @@ public class PlayerFallState : StateBase<PlayerController>
     {
         base.Execute();
 
+        if (inputHandler.jumpPressed)
+        {
+            owner.jumpBufferCounter = owner.jumpBufferTime;
+        }
+
         // Sprawdü warunki przejúcia
-        if (owner.IsGrounded())
+        if (owner.dashTimer <= 0f && inputHandler.dashTrigger)
+        {
+            stateMachine.ChangeState(typeof(PlayerDashState));
+        }
+        else if (inputHandler.jumpPressed && owner.coyoteTimer > 0f)
+        {
+            stateMachine.ChangeState(typeof(PlayerJumpState));
+        }
+        else if (owner.IsGrounded())
         {
             if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)
             {
@@ -33,7 +46,7 @@ public class PlayerFallState : StateBase<PlayerController>
     {
         base.FixedExecute();
 
-        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * owner.walkSpeed, owner.rb.linearVelocity.y);
+        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * owner.walkSpeed * 0.8f, owner.rb.linearVelocity.y);
     }
 
     public override void Exit()

@@ -12,18 +12,26 @@ public class PlayerController : MonoBehaviour
     public string cs;
 
     [Header("Movement Stats")]
-    [SerializeField] public float walkSpeed { get; private set; } = 5f;
-    [SerializeField] public float sprintMultiplier { get; private set; } = 1.5f;
-    [SerializeField] public float jumpForce { get; private set; } = 8f;
+    public float walkSpeed { get; private set; } = 5f;
+    public float minJumpForce { get; private set; } = 5f;
+    public float maxJumpHoldTime { get; private set; } = 1f;
+    public float additionalJumpForce { get; private set; } = 8f;
+    public float coyoteTime { get; private set; } = 0.2f;
+    public float coyoteTimer { get; set; } = 0f;
+    public float jumpBufferTime { get; private set; } = 0.15f;
+    public float jumpBufferCounter { get; set; } = 0f;
+    public float dashForce { get; private set; } = 8f;
+    public float dashTimer { get; set; } = 0f;
+    public float dashCooldown { get; private set; } = 3f;
 
 
     [Header("References")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Transform groundCheck;
 
-    private float horizontal;
-    private bool isTowardsRight = true;
-    private bool isDashing, isJumping;
+    [Header("BoxCast Parameters")]
+    public Vector2 boxSize = new Vector2(0.5f, 0.1f);
+    public float castDistance = 0.05f;
 
     // Maszyna Stanów
     private StateMachine<PlayerController> stateMachine;
@@ -31,6 +39,13 @@ public class PlayerController : MonoBehaviour
     // Referencja dla stanów
     public Animator animator { get; private set; }
     public Rigidbody2D rb { get; private set; }
+
+    // Others
+    private bool isTowardsRight = false;
+    public float moveSpeed = 10f;
+    public float maxSpeedX = 5f;
+    public float maxFallSpeed = 10f;
+    public float maxRiseSpeed = 7f;
 
 
     private void Awake()
@@ -55,16 +70,32 @@ public class PlayerController : MonoBehaviour
         stateMachine?.OnUpdate();
         cs = stateMachine.currentState.name;
         Flip();
+
+        if (IsGrounded())
+            coyoteTimer = coyoteTime;
+        else
+            coyoteTimer -= Time.deltaTime;
+
+        if (jumpBufferCounter > 0f)
+            jumpBufferCounter -= Time.deltaTime;
+        
+        if(dashTimer > 0f)
+            dashTimer -= Time.deltaTime;
     }
 
     private void FixedUpdate()
     {
         stateMachine?.OnFixedUpdate();
+
+        // Ograniczenie prêdkoœci w obu osiach
+        float clampedX = Mathf.Clamp(rb.linearVelocity.x, -maxSpeedX, maxSpeedX);
+        float clampedY = Mathf.Clamp(rb.linearVelocity.y, -maxFallSpeed, maxRiseSpeed);
+        rb.linearVelocity = new Vector2(clampedX, clampedY);
     }
 
     private void Flip()
     {
-        if (isTowardsRight && horizontal < 0f || !isTowardsRight && horizontal > 0f)
+        if (isTowardsRight && rb.linearVelocity.x < 0f || !isTowardsRight && rb.linearVelocity.x > 0f)
         {
             isTowardsRight = !isTowardsRight;
             Vector3 localScale = transform.localScale;
@@ -76,6 +107,29 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGrounded()
     {
-        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+        RaycastHit2D hit = Physics2D.BoxCast(
+           groundCheck.position,
+           boxSize,             
+           0f,                
+           Vector2.down,        
+           castDistance,        
+           groundLayer           
+       );
+
+        return hit.collider != null;
+    }
+
+    public bool IsOnWall(Vector2 dir)
+    {
+        RaycastHit2D hit = Physics2D.BoxCast(
+           groundCheck.position,
+           boxSize,              
+           0f,                  
+           dir,                 
+           castDistance,        
+           groundLayer         
+       );
+
+        return hit.collider != null;
     }
 }

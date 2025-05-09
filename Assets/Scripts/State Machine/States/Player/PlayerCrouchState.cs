@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerWalkState : StateBase<PlayerController>
+public class PlayerCrouchState : StateBase<PlayerController>
 {
     public override void Enter()
     {
@@ -10,13 +10,6 @@ public class PlayerWalkState : StateBase<PlayerController>
             owner.animator.Play(clip.name);
         else
             Debug.Log($"Animation from state {this} is null!");
-
-        if (owner.jumpBufferCounter > 0f && owner.IsGrounded())
-        {
-            owner.jumpBufferCounter = 0;
-            stateMachine.ChangeState(typeof(PlayerJumpState));
-            return;
-        }
     }
 
     public override void Execute()
@@ -24,11 +17,7 @@ public class PlayerWalkState : StateBase<PlayerController>
         base.Execute();
 
         // Sprawdü warunki przejúcia
-        if(owner.dashTimer <= 0f && inputHandler.dashTrigger)
-        {
-            stateMachine.ChangeState(typeof(PlayerDashState));
-        }
-        else if (!owner.IsGrounded())
+        if (!owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));
         }

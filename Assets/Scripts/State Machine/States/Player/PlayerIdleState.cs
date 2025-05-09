@@ -12,6 +12,13 @@ public class PlayerIdleState : StateBase<PlayerController>
         else
             Debug.Log($"Animation from state {this} is null!");
         owner.rb.linearVelocity = Vector2.zero;
+
+        if(owner.jumpBufferCounter > 0f && owner.IsGrounded())
+        {
+            owner.jumpBufferCounter = 0;
+            stateMachine.ChangeState(typeof(PlayerJumpState));
+            return;
+        }
     }
 
     public override void Execute()
@@ -19,11 +26,15 @@ public class PlayerIdleState : StateBase<PlayerController>
         base.Execute();
 
         // Sprawdü warunki przejúcia
-        if (!owner.IsGrounded())
+        if (owner.dashTimer <= 0f && inputHandler.dashTrigger)
+        {
+            stateMachine.ChangeState(typeof(PlayerDashState));
+        }
+        else if (!owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));
         }
-        else if (inputHandler.jumpTrigger)
+        else if (inputHandler.jumpPressed)
         {
             stateMachine.ChangeState(typeof(PlayerJumpState));
         }
