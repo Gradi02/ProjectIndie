@@ -32,7 +32,7 @@ public class PlayerJumpState : StateBase<PlayerController>
             jumpKeyReleasedDuringJumpLogic = true;
         }
 
-        if (owner.dashTimer <= 0f && inputHandler.dashTrigger)
+        if (owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }

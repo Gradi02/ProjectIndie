@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerCrouchState : StateBase<PlayerController>
+public class PlayerWallState : StateBase<PlayerController>
 {
     public override void Enter()
     {

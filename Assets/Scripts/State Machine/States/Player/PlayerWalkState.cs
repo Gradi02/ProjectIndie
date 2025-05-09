@@ -24,7 +24,7 @@ public class PlayerWalkState : StateBase<PlayerController>
         base.Execute();
 
         // Sprawdü warunki przejúcia
-        if(owner.dashTimer <= 0f && inputHandler.dashTrigger)
+        if(owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }

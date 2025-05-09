@@ -35,7 +35,9 @@ public class PlayerInputHandler : MonoBehaviour
     public bool crouchHeld { get; private set; }
     public bool crouchReleased { get; private set; }
     public bool interactTrigger { get; private set; }
-    public bool dashTrigger { get; private set; }
+    public bool dashPressed { get; private set; }
+    public bool dashHeld { get; private set; }
+    public bool dashReleased { get; private set; }
     public bool attackTrigger { get; private set; }
 
 
@@ -85,8 +87,7 @@ public class PlayerInputHandler : MonoBehaviour
         attackAction.performed += context => attackTrigger = true;
         attackAction.canceled += context => attackTrigger = false;
 
-        dashAction.performed += context => dashTrigger = true;
-        dashAction.canceled += context => dashTrigger = false;
+        //update
     }
 
     private void OnEnable()
@@ -137,6 +138,19 @@ public class PlayerInputHandler : MonoBehaviour
             crouchPressed = false;
             crouchHeld = false;
             crouchReleased = false;
+        }
+
+        if (crouchAction != null)
+        {
+            dashPressed = dashAction.WasPerformedThisFrame();
+            dashHeld = dashAction.IsPressed();
+            dashReleased = dashAction.WasReleasedThisFrame();
+        }
+        else
+        {
+            dashPressed = false;
+            dashHeld = false;
+            dashReleased = false;
         }
     }
 

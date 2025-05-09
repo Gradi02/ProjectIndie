@@ -20,9 +20,14 @@ public class PlayerController : MonoBehaviour
     public float coyoteTimer { get; set; } = 0f;
     public float jumpBufferTime { get; private set; } = 0.15f;
     public float jumpBufferCounter { get; set; } = 0f;
-    public float dashForce { get; private set; } = 8f;
+
+    public float dashSpeed { get; private set; } = 25f;
+    public float minDashDuration { get; private set; } = 0.1f;    
+    public float maxDashDuration { get; private set; } = 0.8f;   
+    public float dashCooldown { get; private set; } = 2f;       
+    public float dashStoppingForce { get; private set; } = 0.1f;
     public float dashTimer { get; set; } = 0f;
-    public float dashCooldown { get; private set; } = 3f;
+    public float originalGravityScale { get; set; }
 
 
     [Header("References")]
