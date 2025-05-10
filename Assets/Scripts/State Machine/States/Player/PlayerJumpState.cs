@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class PlayerJumpState : StateBase<PlayerController>
 {
-    private Vector2 wallDirection;
     private const float TIME_TO_CHECK_CONDITIONS = 0.1f;
     private float jumpHoldTimer;
     private bool jumpKeyReleasedDuringJumpLogic;
@@ -16,23 +15,11 @@ public class PlayerJumpState : StateBase<PlayerController>
             Debug.Log($"Animation from state {this} is null!");
 
 
-        if (owner.IsOnWall(Vector2.left))
-        {
-            wallDirection = Vector2.left;
-        }
-        else if (owner.IsOnWall(Vector2.right))
-        {
-            wallDirection = Vector2.right;
-        }
-        else
-        {
-            wallDirection = Vector2.zero;
-        }
-
-        if (wallDirection != Vector2.zero)
+        if (owner.wallDirFlag != Vector2.zero)
         {
             owner.rb.linearVelocity = Vector2.zero;
-            owner.rb.AddForce((Vector2.up * owner.minJumpForce) + (-wallDirection * owner.minJumpForce), ForceMode2D.Impulse);
+            Vector2 jumpDir = (Vector2.up * owner.minJumpForce) + (-owner.wallDirFlag * owner.minJumpForce);
+            owner.rb.AddForce(jumpDir, ForceMode2D.Impulse);
         }
         else
         {
@@ -44,11 +31,22 @@ public class PlayerJumpState : StateBase<PlayerController>
         jumpKeyReleasedDuringJumpLogic = false;
         timeInThisState = 0f;
         owner.coyoteTimer = 0f;
+        owner.wallDirFlag = Vector2.zero;
     }
 
     public override void Execute()
     {
         base.Execute();
+
+        if (inputHandler.moveInput.x < -0.01f)
+        {
+            owner.spriteRenderer.flipX = true;
+        }
+        else if (inputHandler.moveInput.x > 0.01f)
+        {
+            owner.spriteRenderer.flipX = false;
+        }
+
 
         if (inputHandler.jumpReleased)
         {
@@ -64,7 +62,7 @@ public class PlayerJumpState : StateBase<PlayerController>
         if (timeInThisState < TIME_TO_CHECK_CONDITIONS) return;
 
         // SprawdŸ warunki przejœcia
-        if (!owner.IsGrounded() && ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < -0.1f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0.1f)))
+        if ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < 0f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0f))
         {
             stateMachine.ChangeState(typeof(PlayerWallState));
         }
@@ -89,8 +87,9 @@ public class PlayerJumpState : StateBase<PlayerController>
     {
         base.FixedExecute();
 
-        float desiredHorizontalVelocity = inputHandler.moveInput.x * owner.walkSpeed;
-        owner.rb.linearVelocity = new Vector2(desiredHorizontalVelocity, owner.rb.linearVelocity.y);
+        float targetVelocityX = inputHandler.moveInput.x * owner.walkSpeed;
+        float newVelocityX = Mathf.MoveTowards(owner.rb.linearVelocity.x, targetVelocityX, owner.acceleration/2 * Time.fixedDeltaTime);
+        owner.rb.linearVelocity = new Vector2(newVelocityX, owner.rb.linearVelocity.y);
 
         if (inputHandler.jumpHeld && !jumpKeyReleasedDuringJumpLogic && jumpHoldTimer < owner.maxJumpHoldTime)
         {

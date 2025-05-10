@@ -34,6 +34,15 @@ public class PlayerWallState : StateBase<PlayerController>
 
         wallHoldTimer = WALL_HOLD_DURATION;
         owner.rb.linearVelocity = Vector2.zero;
+
+        if (wallDirection.x > -0.01f)
+        {
+            owner.spriteRenderer.flipX = true;
+        }
+        else if (wallDirection.x < 0.01f)
+        {
+            owner.spriteRenderer.flipX = false;
+        }
     }
 
     public override void Execute()
@@ -41,12 +50,9 @@ public class PlayerWallState : StateBase<PlayerController>
         base.Execute();
 
 
-        if (owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        if (inputHandler.jumpPressed)
         {
-            stateMachine.ChangeState(typeof(PlayerDashState));
-        }
-        else if (inputHandler.jumpPressed)
-        {
+            owner.wallDirFlag = wallDirection;
             stateMachine.ChangeState(typeof(PlayerJumpState));
         }
         else if (owner.IsGrounded())

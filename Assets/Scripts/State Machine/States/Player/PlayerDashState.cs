@@ -25,6 +25,15 @@ public class PlayerDashState : StateBase<PlayerController>
         owner.rb.gravityScale = 0f;
 
         owner.rb.linearVelocity = dashDirection * owner.dashSpeed;
+
+        if (dashDirection.x < -0.01f)
+        {
+            owner.spriteRenderer.flipX = true;
+        }
+        else if (dashDirection.x > 0.01f)
+        {
+            owner.spriteRenderer.flipX = false;
+        }
     }
 
     public override void Execute()
@@ -40,7 +49,7 @@ public class PlayerDashState : StateBase<PlayerController>
         if (!isDashMovementActive)
         {
             // Dash siê zakoñczy³, sprawdŸ warunki przejœcia
-            if (!owner.IsGrounded() && (owner.IsOnWall(Vector2.left) || owner.IsOnWall(Vector2.right)))
+            if ((owner.IsOnWall(Vector2.left) || owner.IsOnWall(Vector2.right)))
             {
                 stateMachine.ChangeState(typeof(PlayerWallState));
             }

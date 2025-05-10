@@ -15,6 +15,15 @@ public class PlayerFallState : StateBase<PlayerController>
     {
         base.Execute();
 
+        if (inputHandler.moveInput.x < -0.01f)
+        {
+            owner.spriteRenderer.flipX = true;
+        }
+        else if (inputHandler.moveInput.x > 0.01f)
+        {
+            owner.spriteRenderer.flipX = false;
+        }
+
         if (inputHandler.jumpPressed)
         {
             owner.jumpBufferCounter = owner.jumpBufferTime;
@@ -25,7 +34,7 @@ public class PlayerFallState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
-        else if (!owner.IsGrounded() && ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < -0.1f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0.1f)))
+        else if ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < 0f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0f))
         {
             stateMachine.ChangeState(typeof(PlayerWallState));
         }
@@ -50,7 +59,9 @@ public class PlayerFallState : StateBase<PlayerController>
     {
         base.FixedExecute();
 
-        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * owner.walkSpeed * 0.8f, owner.rb.linearVelocity.y);
+        float targetVelocityX = inputHandler.moveInput.x * owner.walkSpeed * 0.8f;
+        float newVelocityX = Mathf.MoveTowards(owner.rb.linearVelocity.x, targetVelocityX, owner.acceleration/2 * Time.fixedDeltaTime);
+        owner.rb.linearVelocity = new Vector2(newVelocityX, owner.rb.linearVelocity.y);
     }
 
     public override void Exit()

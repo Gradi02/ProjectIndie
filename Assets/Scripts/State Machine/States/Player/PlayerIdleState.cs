@@ -25,12 +25,21 @@ public class PlayerIdleState : StateBase<PlayerController>
     {
         base.Execute();
 
+        if (inputHandler.moveInput.x < -0.01f)
+        {
+            owner.spriteRenderer.flipX = true;
+        }
+        else if (inputHandler.moveInput.x > 0.01f)
+        {
+            owner.spriteRenderer.flipX = false;
+        }
+
         // Sprawdü warunki przejúcia
         if (owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
-        else if (!owner.IsGrounded() && ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < -0.1f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0.1f)))
+        else if ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < 0f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0f))
         {
             stateMachine.ChangeState(typeof(PlayerWallState));
         }
@@ -52,7 +61,9 @@ public class PlayerIdleState : StateBase<PlayerController>
     {
         base.FixedExecute();
 
-        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * owner.walkSpeed, owner.rb.linearVelocity.y);
+        float targetVelocityX = inputHandler.moveInput.x * owner.walkSpeed;
+        float newVelocityX = Mathf.MoveTowards(owner.rb.linearVelocity.x, targetVelocityX, owner.acceleration * Time.fixedDeltaTime);
+        owner.rb.linearVelocity = new Vector2(newVelocityX, owner.rb.linearVelocity.y);
     }
 
     public override void Exit()

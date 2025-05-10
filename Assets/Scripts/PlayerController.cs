@@ -21,13 +21,16 @@ public class PlayerController : MonoBehaviour
     public float jumpBufferTime { get; private set; } = 0.15f;
     public float jumpBufferCounter { get; set; } = 0f;
 
-    public float dashSpeed { get; private set; } = 25f;
+    public float dashSpeed { get; private set; } = 100f;
     public float minDashDuration { get; private set; } = 0.1f;    
-    public float maxDashDuration { get; private set; } = 0.8f;   
+    public float maxDashDuration { get; private set; } = 0.3f;   
     public float dashCooldown { get; private set; } = 2f;       
     public float dashStoppingForce { get; private set; } = 0.1f;
     public float dashTimer { get; set; } = 0f;
     public float originalGravityScale { get; set; }
+    public Vector2 wallDirFlag { get; set; } = Vector2.zero;
+
+    public float acceleration { get; private set; } = 30f;
 
 
     [Header("References")]
@@ -47,11 +50,11 @@ public class PlayerController : MonoBehaviour
     // Referencja dla stanów
     public Animator animator { get; private set; }
     public Rigidbody2D rb { get; private set; }
+    public SpriteRenderer spriteRenderer { get; private set; }
 
     // Others
-    private bool isTowardsRight = false;
     public float moveSpeed = 10f;
-    public float maxSpeedX = 5f;
+    public float maxSpeedX = 10f;
     public float maxFallSpeed = 10f;
     public float maxRiseSpeed = 7f;
 
@@ -60,6 +63,7 @@ public class PlayerController : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
 
         // Pobieranie mo¿liwych stanów gracza
         StateBase<PlayerController>[] stateComponents = GetComponentsInChildren<StateBase<PlayerController>>();
@@ -77,7 +81,6 @@ public class PlayerController : MonoBehaviour
     {
         stateMachine?.OnUpdate();
         cs = stateMachine.currentState.name;
-        Flip();
 
         if (IsGrounded())
             coyoteTimer = coyoteTime;
@@ -99,17 +102,6 @@ public class PlayerController : MonoBehaviour
         float clampedX = Mathf.Clamp(rb.linearVelocity.x, -maxSpeedX, maxSpeedX);
         float clampedY = Mathf.Clamp(rb.linearVelocity.y, -maxFallSpeed, maxRiseSpeed);
         rb.linearVelocity = new Vector2(clampedX, clampedY);
-    }
-
-    private void Flip()
-    {
-        if (isTowardsRight && rb.linearVelocity.x < 0f || !isTowardsRight && rb.linearVelocity.x > 0f)
-        {
-            isTowardsRight = !isTowardsRight;
-            Vector3 localScale = transform.localScale;
-            localScale.x *= -1f;
-            transform.localScale = localScale;
-        }
     }
 
 
