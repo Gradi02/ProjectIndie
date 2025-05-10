@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class PlayerWallState : StateBase<PlayerController>
 {
+    private Vector2 wallDirection;
+    private float wallHoldTimer;
+
+    private const float MIN_WALL_HOLD_INPUT_THRESHOLD = 0.1f;
+    private const float WALL_HOLD_DURATION = 0.7f;
+    private const float WALL_SLIDE_SPEED = 1.5f;
+
     public override void Enter()
     {
         base.Enter();
@@ -10,24 +17,52 @@ public class PlayerWallState : StateBase<PlayerController>
             owner.animator.Play(clip.name);
         else
             Debug.Log($"Animation from state {this} is null!");
+
+        if (owner.IsOnWall(Vector2.left))
+        {
+            wallDirection = Vector2.left;
+        }
+        else if (owner.IsOnWall(Vector2.right))
+        {
+            wallDirection = Vector2.right;
+        }
+        else
+        {
+            stateMachine.ChangeState(typeof(PlayerFallState));
+            return;
+        }
+
+        wallHoldTimer = WALL_HOLD_DURATION;
+        owner.rb.linearVelocity = Vector2.zero;
     }
 
     public override void Execute()
     {
         base.Execute();
 
-        // Sprawdü warunki przejúcia
-        if (!owner.IsGrounded())
+
+        if (owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
-            stateMachine.ChangeState(typeof(PlayerFallState));
+            stateMachine.ChangeState(typeof(PlayerDashState));
         }
         else if (inputHandler.jumpPressed)
         {
             stateMachine.ChangeState(typeof(PlayerJumpState));
         }
-        else if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)                                                                             
+        else if (owner.IsGrounded())
         {
-            stateMachine.ChangeState(typeof(PlayerIdleState));
+            if (Mathf.Abs(inputHandler.moveInput.x) < MIN_WALL_HOLD_INPUT_THRESHOLD && owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)
+            {
+                stateMachine.ChangeState(typeof(PlayerIdleState));
+            }
+            else
+            {
+                stateMachine.ChangeState(typeof(PlayerWalkState));
+            }
+        }
+        else if (!owner.IsOnWall(wallDirection))
+        {
+            stateMachine.ChangeState(typeof(PlayerFallState));
         }
     }
 
@@ -35,7 +70,18 @@ public class PlayerWallState : StateBase<PlayerController>
     {
         base.FixedExecute();
 
-        owner.rb.linearVelocity = new Vector2(inputHandler.moveInput.x * owner.walkSpeed, owner.rb.linearVelocity.y);
+        float targetVerticalVelocity;
+
+        if (wallHoldTimer > 0f)
+        {
+            targetVerticalVelocity = 0f;
+        }
+        else
+        {
+            targetVerticalVelocity = -WALL_SLIDE_SPEED;
+        }
+
+        owner.rb.linearVelocity = new Vector2(0f, targetVerticalVelocity);
     }
 
     public override void Exit()

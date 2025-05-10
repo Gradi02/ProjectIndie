@@ -25,6 +25,10 @@ public class PlayerFallState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
+        else if (!owner.IsGrounded() && ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < -0.1f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0.1f)))
+        {
+            stateMachine.ChangeState(typeof(PlayerWallState));
+        }
         else if (inputHandler.jumpPressed && owner.coyoteTimer > 0f)
         {
             stateMachine.ChangeState(typeof(PlayerJumpState));

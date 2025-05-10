@@ -40,7 +40,11 @@ public class PlayerDashState : StateBase<PlayerController>
         if (!isDashMovementActive)
         {
             // Dash siê zakoñczy³, sprawdŸ warunki przejœcia
-            if (!owner.IsGrounded())
+            if (!owner.IsGrounded() && (owner.IsOnWall(Vector2.left) || owner.IsOnWall(Vector2.right)))
+            {
+                stateMachine.ChangeState(typeof(PlayerWallState));
+            }
+            else if (!owner.IsGrounded())
             {
                 stateMachine.ChangeState(typeof(PlayerFallState));
             }

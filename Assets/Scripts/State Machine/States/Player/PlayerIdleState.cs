@@ -30,6 +30,10 @@ public class PlayerIdleState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
+        else if (!owner.IsGrounded() && ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < -0.1f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0.1f)))
+        {
+            stateMachine.ChangeState(typeof(PlayerWallState));
+        }
         else if (!owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));

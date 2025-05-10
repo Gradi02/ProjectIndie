@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerJumpState : StateBase<PlayerController>
 {
+    private Vector2 wallDirection;
     private const float TIME_TO_CHECK_CONDITIONS = 0.1f;
     private float jumpHoldTimer;
     private bool jumpKeyReleasedDuringJumpLogic;
@@ -14,8 +15,30 @@ public class PlayerJumpState : StateBase<PlayerController>
         else
             Debug.Log($"Animation from state {this} is null!");
 
-        owner.rb.linearVelocity = new Vector2(owner.rb.linearVelocity.x, 0f);
-        owner.rb.AddForce(Vector2.up * owner.minJumpForce, ForceMode2D.Impulse);
+
+        if (owner.IsOnWall(Vector2.left))
+        {
+            wallDirection = Vector2.left;
+        }
+        else if (owner.IsOnWall(Vector2.right))
+        {
+            wallDirection = Vector2.right;
+        }
+        else
+        {
+            wallDirection = Vector2.zero;
+        }
+
+        if (wallDirection != Vector2.zero)
+        {
+            owner.rb.linearVelocity = Vector2.zero;
+            owner.rb.AddForce((Vector2.up * owner.minJumpForce) + (-wallDirection * owner.minJumpForce), ForceMode2D.Impulse);
+        }
+        else
+        {
+            owner.rb.linearVelocity = new Vector2(owner.rb.linearVelocity.x, 0f);
+            owner.rb.AddForce(Vector2.up * owner.minJumpForce, ForceMode2D.Impulse);
+        }
 
         jumpHoldTimer = 0f;
         jumpKeyReleasedDuringJumpLogic = false;
@@ -36,11 +59,16 @@ public class PlayerJumpState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
+        
 
         if (timeInThisState < TIME_TO_CHECK_CONDITIONS) return;
 
         // SprawdŸ warunki przejœcia
-        if (owner.rb.linearVelocity.y < 0 && !owner.IsGrounded())
+        if (!owner.IsGrounded() && ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < -0.1f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0.1f)))
+        {
+            stateMachine.ChangeState(typeof(PlayerWallState));
+        }
+        else if (owner.rb.linearVelocity.y < 0 && !owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));
         }

@@ -33,9 +33,12 @@ public class PlayerController : MonoBehaviour
     [Header("References")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Transform groundCheck;
+    [SerializeField] private Transform wallCheckLeft;
+    [SerializeField] private Transform wallCheckRight;
 
     [Header("BoxCast Parameters")]
     public Vector2 boxSize = new Vector2(0.5f, 0.1f);
+    public Vector2 wallBoxSize = new Vector2(0.1f, 0.5f);
     public float castDistance = 0.05f;
 
     // Maszyna Stanów
@@ -126,9 +129,11 @@ public class PlayerController : MonoBehaviour
 
     public bool IsOnWall(Vector2 dir)
     {
+        Transform check = (dir == Vector2.right ? wallCheckRight : wallCheckLeft);
+
         RaycastHit2D hit = Physics2D.BoxCast(
-           groundCheck.position,
-           boxSize,              
+           check.position,
+           wallBoxSize,              
            0f,                  
            dir,                 
            castDistance,        
