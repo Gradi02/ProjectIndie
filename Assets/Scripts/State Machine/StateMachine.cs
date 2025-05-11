@@ -1,40 +1,79 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-public class StateMachine<T> : MonoBehaviour where T : MonoBehaviour
+public class StateMachine<T> where T : MonoBehaviour
 {
-
-    [SerializeField] private string currentStateNameDebug; // Do podgl¹du w Inspektorze
     public StateBase<T> currentState { get; private set; }
     private Dictionary<Type, StateBase<T>> availableStates;
-    private T ownerContext; // Referencja do w³aœciciela
+    private T ownerContext;
 
 
-    // Wywo³ywana po stworzeniu instancji maszyny
-    public void Initialize(T owner, Dictionary<Type, StateBase<T>> states, Type startingStateType)
+    public StateMachine(T owner, IEnumerable<StateBase<T>> stateComponents)
     {
         ownerContext = owner;
-        availableStates = states;
+        availableStates = new Dictionary<Type, StateBase<T>>();
 
-        if (availableStates.TryGetValue(startingStateType, out StateBase<T> startingState))
+        Type determinedStartingStateType = null;
+
+        if (stateComponents == null || !stateComponents.Any())
+        {
+            Debug.LogError($"No state components provided to StateMachine for owner {owner.name}.", owner);
+            return;
+        }
+
+        foreach (var state in stateComponents)
+        {
+            if (state == null) continue;
+
+            Type stateType = state.GetType();
+            if (!availableStates.ContainsKey(stateType))
+            {
+                state.Initialize(this, ownerContext);
+                availableStates.Add(stateType, state);
+
+                if (Attribute.IsDefined(stateType, typeof(StartingStateAttribute)))
+                {
+                    if (determinedStartingStateType != null)
+                    {
+                        Debug.LogWarning($"Multiple states on {owner.name} are marked with [StartingState]. Using the first one found: {determinedStartingStateType.Name}. Conflicting: {stateType.Name}", owner);
+                    }
+                    else
+                    {
+                        determinedStartingStateType = stateType;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Duplicate state component of type {stateType.Name} found for owner {owner.name}. Ignoring duplicate.", state);
+            }
+        }
+
+        if (determinedStartingStateType == null && availableStates.Count > 0)
+        {
+            determinedStartingStateType = availableStates.Keys.First();
+            Debug.LogWarning($"No starting state explicitly defined or fallback provided for {owner.name}. Defaulting to first found state: {determinedStartingStateType.Name}", owner);
+        }
+
+        if (determinedStartingStateType != null && availableStates.TryGetValue(determinedStartingStateType, out StateBase<T> startingState))
         {
             currentState = startingState;
             currentState.Enter();
-            currentStateNameDebug = currentState.GetType().Name;
         }
-        else
+        else if (availableStates.Count > 0)
         {
-            Debug.LogError($"Starting state type {startingStateType.Name} not found in available states!");
+            Debug.LogError($"Could not determine or find a starting state for {owner.name}. StateMachine will not function correctly.", owner);
         }
     }
 
-    private void Update()
+    public void OnUpdate()
     {
         currentState?.Execute();
     }
 
-    private void FixedUpdate()
+    public void OnFixedUpdate()
     {
         currentState?.FixedExecute();
     }
@@ -46,27 +85,15 @@ public class StateMachine<T> : MonoBehaviour where T : MonoBehaviour
             return; // Ju¿ jesteœ w tym stanie
         }
 
-        if(currentState != null && !currentState.CanExitState())
-        {
-            return; // Delay przejscia miedzy stanami by zapobiec dziwnej pêtli
-        }
-
         if (availableStates.TryGetValue(newStateType, out StateBase<T> newState))
         {
             currentState?.Exit();
             currentState = newState;
             currentState.Enter();
-            currentStateNameDebug = currentState.GetType().Name; // Aktualizacja nazwy dla debugowania
         }
         else
         {
             Debug.LogError($"State type {newStateType.Name} not found! Cannot change state.");
         }
     }
-
-
-    // Metody udostêpniaj¹ce kontekst dla stanów
-    public Rigidbody2D GetRigidbody() => ownerContext.GetComponent<Rigidbody2D>(); // Przyk³ad
-    public Animator GetAnimator() => ownerContext.GetComponent<Animator>();     // Przyk³ad
-    public T GetOwnerContext() => ownerContext;
 }

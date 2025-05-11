@@ -15,7 +15,7 @@ public class PlayerInputHandler : MonoBehaviour
     [SerializeField] private string jump = "Jump";
     [SerializeField] private string crouch = "Crouch";
     [SerializeField] private string interact = "Interact";
-    [SerializeField] private string sprint = "Sprint";
+    [SerializeField] private string dash = "Dash";
     [SerializeField] private string attack = "Attack";
 
     private InputAction moveAction;
@@ -23,15 +23,21 @@ public class PlayerInputHandler : MonoBehaviour
     private InputAction jumpAction;
     private InputAction crouchAction;
     private InputAction interactAction;
-    private InputAction sprintAction;
+    private InputAction dashAction;
     private InputAction attackAction;
 
     public Vector2 moveInput { get; private set; }
     public Vector2 lookInput { get; private set; }
-    public bool jumpTrigger { get; private set; }
-    public bool crouchTrigger { get; private set; }
+    public bool jumpPressed { get; private set; }
+    public bool jumpHeld { get; private set; }
+    public bool jumpReleased { get; private set; }
+    public bool crouchPressed { get; private set; }
+    public bool crouchHeld { get; private set; }
+    public bool crouchReleased { get; private set; }
     public bool interactTrigger { get; private set; }
-    public float sprintSpeed { get; private set; }
+    public bool dashPressed { get; private set; }
+    public bool dashHeld { get; private set; }
+    public bool dashReleased { get; private set; }
     public bool attackTrigger { get; private set; }
 
 
@@ -49,6 +55,7 @@ public class PlayerInputHandler : MonoBehaviour
         else
         {
             Destroy(gameObject);
+            return;
         }
 
         moveAction = playerControls.FindActionMap(actionMapName).FindAction(move);
@@ -56,7 +63,7 @@ public class PlayerInputHandler : MonoBehaviour
         jumpAction = playerControls.FindActionMap(actionMapName).FindAction(jump);
         crouchAction = playerControls.FindActionMap(actionMapName).FindAction(crouch);
         interactAction = playerControls.FindActionMap(actionMapName).FindAction(interact);
-        sprintAction = playerControls.FindActionMap(actionMapName).FindAction(sprint);
+        dashAction = playerControls.FindActionMap(actionMapName).FindAction(dash);
         attackAction = playerControls.FindActionMap(actionMapName).FindAction(attack);
 
         RegisterInputActions();
@@ -70,11 +77,9 @@ public class PlayerInputHandler : MonoBehaviour
         lookAction.performed += context => lookInput = context.ReadValue<Vector2>();
         lookAction.canceled += context => lookInput = Vector2.zero;
 
-        jumpAction.performed += context => jumpTrigger = true;
-        jumpAction.canceled += context => jumpTrigger = false;
+        //Skok przenioslem do update
 
-        crouchAction.performed += context => crouchTrigger = true;
-        crouchAction.canceled += context => crouchTrigger = false;
+        //Crouch tez w update
 
         interactAction.performed += context => interactTrigger = true;
         interactAction.canceled += context => interactTrigger = false;
@@ -82,8 +87,7 @@ public class PlayerInputHandler : MonoBehaviour
         attackAction.performed += context => attackTrigger = true;
         attackAction.canceled += context => attackTrigger = false;
 
-        sprintAction.performed += context => sprintSpeed = context.ReadValue<float>();
-        sprintAction.canceled += context => sprintSpeed = 0f;
+        //update
     }
 
     private void OnEnable()
@@ -93,7 +97,7 @@ public class PlayerInputHandler : MonoBehaviour
         jumpAction.Enable();
         crouchAction.Enable();
         interactAction.Enable();
-        sprintAction.Enable();
+        dashAction.Enable();
         attackAction.Enable();
     }
 
@@ -104,10 +108,51 @@ public class PlayerInputHandler : MonoBehaviour
         jumpAction.Disable();
         crouchAction.Disable();
         interactAction.Disable();
-        sprintAction.Disable();
+        dashAction.Disable();
         attackAction.Disable();
     }
 
+    private void Update()
+    {
+        if (jumpAction != null)
+        {
+            jumpPressed = jumpAction.WasPressedThisFrame();
+            jumpHeld = jumpAction.IsPressed();
+            jumpReleased = jumpAction.WasReleasedThisFrame();
+        }
+        else
+        {
+            jumpPressed = false;
+            jumpHeld = false;
+            jumpReleased = false;
+        }
+
+        if(crouchAction != null)
+        {
+            crouchPressed = crouchAction.WasPerformedThisFrame();
+            crouchHeld = crouchAction.IsPressed();
+            crouchReleased = crouchAction.WasReleasedThisFrame();
+        }
+        else
+        {
+            crouchPressed = false;
+            crouchHeld = false;
+            crouchReleased = false;
+        }
+
+        if (crouchAction != null)
+        {
+            dashPressed = dashAction.WasPerformedThisFrame();
+            dashHeld = dashAction.IsPressed();
+            dashReleased = dashAction.WasReleasedThisFrame();
+        }
+        else
+        {
+            dashPressed = false;
+            dashHeld = false;
+            dashReleased = false;
+        }
+    }
 
     public void SaveControlOverrides()
     {

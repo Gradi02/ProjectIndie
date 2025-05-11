@@ -1,19 +1,17 @@
 using UnityEngine;
 
-
-[StartingState]
-public class PlayerIdleState : StateBase<PlayerController>
+public class PlayerWalkState : StateBase<PlayerController>
 {
     public override void Enter()
     {
         base.Enter();
+
         if (clip != null)
             owner.animator.Play(clip.name);
         else
             Debug.Log($"Animation from state {this} is null!");
-        owner.rb.linearVelocity = Vector2.zero;
 
-        if(owner.jumpBufferCounter > 0f && owner.IsGrounded())
+        if (owner.jumpBufferCounter > 0f && owner.IsGrounded())
         {
             owner.jumpBufferCounter = 0;
             stateMachine.ChangeState(typeof(PlayerJumpState));
@@ -54,9 +52,9 @@ public class PlayerIdleState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerJumpState));
         }
-        else if (owner.rb.linearVelocity.magnitude > MIN_MOVEMENT_THRESHOLD)
+        else if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)                                                                             
         {
-            stateMachine.ChangeState(typeof(PlayerWalkState));
+            stateMachine.ChangeState(typeof(PlayerIdleState));
         }
     }
 

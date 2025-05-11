@@ -1,8 +1,6 @@
 using UnityEngine;
 
-
-[StartingState]
-public class PlayerIdleState : StateBase<PlayerController>
+public class PlayerFallState : StateBase<PlayerController>
 {
     public override void Enter()
     {
@@ -11,17 +9,6 @@ public class PlayerIdleState : StateBase<PlayerController>
             owner.animator.Play(clip.name);
         else
             Debug.Log($"Animation from state {this} is null!");
-        owner.rb.linearVelocity = Vector2.zero;
-
-        if(owner.jumpBufferCounter > 0f && owner.IsGrounded())
-        {
-            owner.jumpBufferCounter = 0;
-            stateMachine.ChangeState(typeof(PlayerJumpState));
-            return;
-        }
-
-        owner.dashUsed = false;
-        owner.ResetJumps();
     }
 
     public override void Execute()
@@ -37,6 +24,11 @@ public class PlayerIdleState : StateBase<PlayerController>
             owner.spriteRenderer.flipX = false;
         }
 
+        if (inputHandler.jumpPressed)
+        {
+            owner.jumpBufferCounter = owner.jumpBufferTime;
+        }
+
         // Sprawdü warunki przejúcia
         if (owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
@@ -46,17 +38,23 @@ public class PlayerIdleState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerWallState));
         }
-        else if (!owner.IsGrounded())
-        {
-            stateMachine.ChangeState(typeof(PlayerFallState));
-        }
         else if (inputHandler.jumpPressed)
         {
-            stateMachine.ChangeState(typeof(PlayerJumpState));
+            if(owner.jumpsRemaining == owner.maxJumps && owner.coyoteTimer > 0f)
+                stateMachine.ChangeState(typeof(PlayerJumpState));
+            else if(owner.jumpsRemaining > 0 && !owner.dashUsed)
+                stateMachine.ChangeState(typeof(PlayerExtraJumpState));
         }
-        else if (owner.rb.linearVelocity.magnitude > MIN_MOVEMENT_THRESHOLD)
+        else if (owner.IsGrounded())
         {
-            stateMachine.ChangeState(typeof(PlayerWalkState));
+            if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)
+            {
+                stateMachine.ChangeState(typeof(PlayerIdleState));
+            }
+            else
+            {
+                stateMachine.ChangeState(typeof(PlayerWalkState));
+            }
         }
     }
 
@@ -64,8 +62,8 @@ public class PlayerIdleState : StateBase<PlayerController>
     {
         base.FixedExecute();
 
-        float targetVelocityX = inputHandler.moveInput.x * owner.walkSpeed;
-        float newVelocityX = Mathf.MoveTowards(owner.rb.linearVelocity.x, targetVelocityX, owner.acceleration * Time.fixedDeltaTime);
+        float targetVelocityX = inputHandler.moveInput.x * owner.walkSpeed * 0.8f;
+        float newVelocityX = Mathf.MoveTowards(owner.rb.linearVelocity.x, targetVelocityX, owner.acceleration/2 * Time.fixedDeltaTime);
         owner.rb.linearVelocity = new Vector2(newVelocityX, owner.rb.linearVelocity.y);
     }
 
