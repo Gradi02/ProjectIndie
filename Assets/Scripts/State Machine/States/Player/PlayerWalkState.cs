@@ -17,6 +17,9 @@ public class PlayerWalkState : StateBase<PlayerController>
             stateMachine.ChangeState(typeof(PlayerJumpState));
             return;
         }
+
+        owner.dashUsed = false;
+        owner.ResetJumps();
     }
 
     public override void Execute()

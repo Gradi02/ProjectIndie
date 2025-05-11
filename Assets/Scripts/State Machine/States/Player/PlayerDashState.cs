@@ -34,6 +34,8 @@ public class PlayerDashState : StateBase<PlayerController>
         {
             owner.spriteRenderer.flipX = false;
         }
+
+        owner.dashUsed = true;
     }
 
     public override void Execute()
@@ -96,9 +98,7 @@ public class PlayerDashState : StateBase<PlayerController>
     {
         base.Exit();
 
-        if (owner.rb != null) 
-        {
-            owner.rb.gravityScale = owner.originalGravityScale;
-        }
+        owner.rb.gravityScale = owner.originalGravityScale;
+        owner.rb.linearVelocity = owner.rb.linearVelocity/2;
     }
 }

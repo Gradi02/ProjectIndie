@@ -43,6 +43,9 @@ public class PlayerWallState : StateBase<PlayerController>
         {
             owner.spriteRenderer.flipX = false;
         }
+
+        owner.dashUsed = false;
+        owner.ResetJumps();
     }
 
     public override void Execute()

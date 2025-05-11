@@ -8,29 +8,8 @@ using System.Linq;
 [RequireComponent(typeof(Animator))]
 public class PlayerController : MonoBehaviour
 {
-    private PlayerInputHandler inputHandler => PlayerInputHandler.Instance;
-    public string cs;
+    public string cs;   //aktualny stan do podgl¹du
 
-    [Header("Movement Stats")]
-    public float walkSpeed { get; private set; } = 5f;
-    public float minJumpForce { get; private set; } = 5f;
-    public float maxJumpHoldTime { get; private set; } = 1f;
-    public float additionalJumpForce { get; private set; } = 8f;
-    public float coyoteTime { get; private set; } = 0.2f;
-    public float coyoteTimer { get; set; } = 0f;
-    public float jumpBufferTime { get; private set; } = 0.15f;
-    public float jumpBufferCounter { get; set; } = 0f;
-
-    public float dashSpeed { get; private set; } = 100f;
-    public float minDashDuration { get; private set; } = 0.1f;    
-    public float maxDashDuration { get; private set; } = 0.3f;   
-    public float dashCooldown { get; private set; } = 2f;       
-    public float dashStoppingForce { get; private set; } = 0.1f;
-    public float dashTimer { get; set; } = 0f;
-    public float originalGravityScale { get; set; }
-    public Vector2 wallDirFlag { get; set; } = Vector2.zero;
-
-    public float acceleration { get; private set; } = 30f;
 
 
     [Header("References")]
@@ -44,19 +23,45 @@ public class PlayerController : MonoBehaviour
     public Vector2 wallBoxSize = new Vector2(0.1f, 0.5f);
     public float castDistance = 0.05f;
 
+    [Header("-=-=- Movement Stats -=-=-")]
+    [Header("Walk")]
+    public float walkSpeed = 5f;
+    public float maxSpeedX = 10f;
+    public float maxFallSpeed = 10f;
+    [Header("Jump")]
+    public float maxRiseSpeed = 7f;
+    public float minJumpForce= 5f;
+    public float maxJumpHoldTime = 1f;
+    public float additionalJumpForce = 8f;
+    public int maxJumps = 2;
+    [Header("Dash")]
+    public float dashSpeed = 100f;
+    public float minDashDuration = 0.1f;
+    public float maxDashDuration = 0.3f;
+    public float dashCooldown = 2f;
+    public float dashStoppingForce = 0.1f;
+
+
+
     // Maszyna Stanów
     private StateMachine<PlayerController> stateMachine;
 
-    // Referencja dla stanów
+    // Referencja dla komponentów
     public Animator animator { get; private set; }
     public Rigidbody2D rb { get; private set; }
     public SpriteRenderer spriteRenderer { get; private set; }
 
-    // Others
-    public float moveSpeed = 10f;
-    public float maxSpeedX = 10f;
-    public float maxFallSpeed = 10f;
-    public float maxRiseSpeed = 7f;
+    // Referencje dla zmiennych gracza
+    public float coyoteTime { get; private set; } = 0.2f;
+    public float coyoteTimer { get; set; } = 0f;
+    public float jumpBufferTime { get; private set; } = 0.15f;
+    public float jumpBufferCounter { get; set; } = 0f;
+    public float dashTimer { get; set; } = 0f;
+    public float originalGravityScale { get; set; }
+    public Vector2 wallDirFlag { get; set; } = Vector2.zero;
+    public float acceleration { get; private set; } = 30f;
+    public int jumpsRemaining { get; set; } = 0;
+    public bool dashUsed { get; set; } = false;
 
 
     private void Awake()
@@ -75,6 +80,8 @@ public class PlayerController : MonoBehaviour
 
         // Inicjalizacja maszyny
         stateMachine = new StateMachine<PlayerController>(this, stateComponents.ToList());
+
+        ResetJumps();
     }
 
     private void Update()
@@ -133,5 +140,10 @@ public class PlayerController : MonoBehaviour
        );
 
         return hit.collider != null;
+    }
+
+    public void ResetJumps()
+    {
+        jumpsRemaining = maxJumps;
     }
 }

@@ -38,9 +38,12 @@ public class PlayerFallState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerWallState));
         }
-        else if (inputHandler.jumpPressed && owner.coyoteTimer > 0f)
+        else if (inputHandler.jumpPressed)
         {
-            stateMachine.ChangeState(typeof(PlayerJumpState));
+            if(owner.jumpsRemaining == owner.maxJumps && owner.coyoteTimer > 0f)
+                stateMachine.ChangeState(typeof(PlayerJumpState));
+            else if(owner.jumpsRemaining > 0 && !owner.dashUsed)
+                stateMachine.ChangeState(typeof(PlayerExtraJumpState));
         }
         else if (owner.IsGrounded())
         {
