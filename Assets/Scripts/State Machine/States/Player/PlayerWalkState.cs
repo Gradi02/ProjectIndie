@@ -40,10 +40,6 @@ public class PlayerWalkState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
-        else if ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < 0f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0f))
-        {
-            stateMachine.ChangeState(typeof(PlayerWallState));
-        }
         else if (!owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));

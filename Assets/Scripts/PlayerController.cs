@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
     public float maxJumpHoldTime = 1f;
     public float additionalJumpForce = 8f;
     public int maxJumps = 2;
+    public float fallMultiplier = 2.5f;
     [Header("Dash")]
     public float dashSpeed = 100f;
     public float minDashDuration = 0.1f;
@@ -86,6 +87,13 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (rb.linearVelocity.y < 0)
+        {
+            rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        }
+
+
+
         stateMachine?.OnUpdate();
         cs = stateMachine.currentState.name;
 
