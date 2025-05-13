@@ -2,12 +2,11 @@ using UnityEngine;
 
 public class PlayerDashSmashState : StateBase<PlayerController>
 {
-    private Vector2 wallDirection;
-    private float wallHoldTimer;
+    [SerializeField] private ParticleSystem dashSmashParticle;
+    private float cooldown = 0;
 
-    private const float MIN_WALL_HOLD_INPUT_THRESHOLD = 0.1f;
-    private const float WALL_HOLD_DURATION = 0.7f;
-    private const float WALL_SLIDE_SPEED = 1.5f;
+    private const float DASH_SMASH_COOLDOWN = 0.5f;
+
 
     public override void Enter()
     {
@@ -18,33 +17,9 @@ public class PlayerDashSmashState : StateBase<PlayerController>
         else
             Debug.Log($"Animation from state {this} is null!");
 
-        if (owner.IsOnWall(Vector2.left))
-        {
-            wallDirection = Vector2.left;
-        }
-        else if (owner.IsOnWall(Vector2.right))
-        {
-            wallDirection = Vector2.right;
-        }
-        else
-        {
-            stateMachine.ChangeState(typeof(PlayerFallState));
-            return;
-        }
-
-        wallHoldTimer = WALL_HOLD_DURATION;
         owner.rb.linearVelocity = Vector2.zero;
+        cooldown = DASH_SMASH_COOLDOWN;
 
-        if (wallDirection.x > -0.01f)
-        {
-            owner.spriteRenderer.flipX = true;
-        }
-        else if (wallDirection.x < 0.01f)
-        {
-            owner.spriteRenderer.flipX = false;
-        }
-
-        owner.dashUsed = false;
         owner.ResetJumps();
     }
 
@@ -52,45 +27,40 @@ public class PlayerDashSmashState : StateBase<PlayerController>
     {
         base.Execute();
 
+        if(cooldown > 0)
+            cooldown -= Time.deltaTime;
 
         if (inputHandler.jumpPressed)
         {
-            owner.wallDirFlag = wallDirection;
-            stateMachine.ChangeState(typeof(PlayerJumpState));
+            owner.jumpBufferCounter = owner.jumpBufferTime;
         }
-        else if (owner.IsGrounded())
+    
+        if(cooldown > 0)
         {
-            if (Mathf.Abs(inputHandler.moveInput.x) < MIN_WALL_HOLD_INPUT_THRESHOLD && owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)
-            {
-                stateMachine.ChangeState(typeof(PlayerIdleState));
-            }
-            else
-            {
-                stateMachine.ChangeState(typeof(PlayerWalkState));
-            }
+            return;
         }
-        else if (!owner.IsOnWall(wallDirection))
+
+        if (!owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerFallState));
+        }
+        else if (inputHandler.jumpPressed)
+        {
+            stateMachine.ChangeState(typeof(PlayerJumpState));
+        }
+        else if (owner.rb.linearVelocity.magnitude > MIN_MOVEMENT_THRESHOLD)
+        {
+            stateMachine.ChangeState(typeof(PlayerWalkState));
+        }
+        else
+        {
+            stateMachine.ChangeState(typeof(PlayerIdleState));
         }
     }
 
     public override void FixedExecute()
     {
         base.FixedExecute();
-
-        float targetVerticalVelocity;
-
-        if (wallHoldTimer > 0f)
-        {
-            targetVerticalVelocity = 0f;
-        }
-        else
-        {
-            targetVerticalVelocity = -WALL_SLIDE_SPEED;
-        }
-
-        owner.rb.linearVelocity = new Vector2(0f, targetVerticalVelocity);
     }
 
     public override void Exit()

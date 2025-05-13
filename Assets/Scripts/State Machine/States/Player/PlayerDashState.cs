@@ -19,7 +19,6 @@ public class PlayerDashState : StateBase<PlayerController>
 
         dashStartTime = Time.time;
         isDashMovementActive = true;
-        owner.dashTimer = owner.dashCooldown; 
 
         owner.originalGravityScale = owner.rb.gravityScale;
         owner.rb.gravityScale = 0f;
@@ -48,6 +47,11 @@ public class PlayerDashState : StateBase<PlayerController>
             owner.jumpBufferCounter = owner.jumpBufferTime;
         }
 
+        if(owner.IsGrounded())
+        {
+            stateMachine.ChangeState(typeof(PlayerDashSmashState));
+        }
+
         if (!isDashMovementActive)
         {
             // Dash siê zakoñczy³, sprawdŸ warunki przejœcia
@@ -58,18 +62,6 @@ public class PlayerDashState : StateBase<PlayerController>
             else if (!owner.IsGrounded())
             {
                 stateMachine.ChangeState(typeof(PlayerFallState));
-            }
-            else if (inputHandler.moveInput.x != 0)
-            {
-                stateMachine.ChangeState(typeof(PlayerWalkState));
-            }
-            else if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)
-            {
-                stateMachine.ChangeState(typeof(PlayerIdleState));
-            }
-            else
-            {
-                stateMachine.ChangeState(typeof(PlayerWalkState));
             }
         }
     }

@@ -30,7 +30,7 @@ public class PlayerFallState : StateBase<PlayerController>
         }
 
         // Sprawdü warunki przejúcia
-        if (owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }

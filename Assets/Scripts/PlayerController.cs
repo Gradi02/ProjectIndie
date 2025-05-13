@@ -57,7 +57,6 @@ public class PlayerController : MonoBehaviour
     public float coyoteTimer { get; set; } = 0f;
     public float jumpBufferTime { get; private set; } = 0.15f;
     public float jumpBufferCounter { get; set; } = 0f;
-    public float dashTimer { get; set; } = 0f;
     public float originalGravityScale { get; set; }
     public Vector2 wallDirFlag { get; set; } = Vector2.zero;
     public float acceleration { get; private set; } = 30f;
@@ -104,9 +103,6 @@ public class PlayerController : MonoBehaviour
 
         if (jumpBufferCounter > 0f)
             jumpBufferCounter -= Time.deltaTime;
-        
-        if(dashTimer > 0f)
-            dashTimer -= Time.deltaTime;
     }
 
     private void FixedUpdate()

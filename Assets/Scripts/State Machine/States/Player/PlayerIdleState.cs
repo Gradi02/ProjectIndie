@@ -38,13 +38,9 @@ public class PlayerIdleState : StateBase<PlayerController>
         }
 
         // Sprawdü warunki przejúcia
-        if (owner.dashTimer <= 0f && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
-        }
-        else if ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < 0f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0f))
-        {
-            stateMachine.ChangeState(typeof(PlayerWallState));
         }
         else if (!owner.IsGrounded())
         {
