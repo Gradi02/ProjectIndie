@@ -36,7 +36,12 @@ public class PlayerWalkState : StateBase<PlayerController>
         }
 
         // Sprawdü warunki przejúcia
-        if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        if (inputHandler.attackTrigger)
+        {
+            stateMachine.ChangeState(typeof(PlayerAttackState));
+            return;
+        }
+        else if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }

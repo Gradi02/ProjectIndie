@@ -41,7 +41,15 @@ public class PlayerController : MonoBehaviour
     public float maxDashDuration = 0.3f;
     public float dashCooldown = 2f;
     public float dashStoppingForce = 0.1f;
-
+    [Header("Attack")]
+    public float attackStateDuration = 0.4f;
+    public float attackDashForce = 8f;         
+    public float attackDashDuration = 0.15f;    
+    public float attackHitboxRadius = 0.7f;    
+    public float attackHitboxOffset = 0.5f;      
+    public LayerMask enemyLayer;                 
+    public float playerKnockbackOnHitForce = 6f;  
+    public float playerKnockbackDuration = 0.1f;
 
 
     // Maszyna Stanów

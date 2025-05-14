@@ -48,7 +48,12 @@ public class PlayerExtraJumpState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
-        
+        else if (inputHandler.attackTrigger)
+        {
+            stateMachine.ChangeState(typeof(PlayerAttackState));
+            return;
+        }
+
 
         if (timeInThisState < TIME_TO_CHECK_CONDITIONS) return;
 
