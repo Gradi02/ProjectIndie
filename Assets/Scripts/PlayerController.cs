@@ -50,6 +50,10 @@ public class PlayerController : MonoBehaviour
     public LayerMask enemyLayer;                 
     public float playerKnockbackOnHitForce = 6f;  
     public float playerKnockbackDuration = 0.1f;
+    [Header("Jump Ascent")]
+    public float jumpAscentAccelerationFactor = 2.0f;
+    public float jumpAscentAccelerationDuration = 0.15f;
+    public float jumpHoldEndForceMultiplier = 0.1f;
 
 
     // Maszyna Stanów
@@ -94,7 +98,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (rb.linearVelocity.y < 0)
+        if (rb.linearVelocity.y < 0 && !PlayerInputHandler.Instance.dashHeld)
         {
             rb.linearVelocity += Vector2.up * Physics2D.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
         }

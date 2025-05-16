@@ -15,7 +15,7 @@ public class PlayerDashState : StateBase<PlayerController>
         else
             Debug.Log($"Animation from state {this} is null!");
 
-        dashDirection = inputHandler.lookInput.normalized;
+        dashDirection = inputHandler.moveInput.normalized;
 
         dashStartTime = Time.time;
         isDashMovementActive = true;
@@ -47,15 +47,23 @@ public class PlayerDashState : StateBase<PlayerController>
             owner.jumpBufferCounter = owner.jumpBufferTime;
         }
 
-        if(owner.IsGrounded())
+/*        if(owner.IsGrounded())
         {
             stateMachine.ChangeState(typeof(PlayerDashSmashState));
-        }
+        }*/
 
         if (!isDashMovementActive)
         {
             // Dash siê zakoñczy³, sprawdŸ warunki przejœcia
-            if ((owner.IsOnWall(Vector2.left) || owner.IsOnWall(Vector2.right)))
+            if (inputHandler.attackTrigger)
+            {
+                stateMachine.ChangeState(typeof(PlayerAttackState));
+            }
+            else if (inputHandler.jumpPressed && owner.jumpsRemaining > 0)
+            {
+                stateMachine.ChangeState(typeof(PlayerExtraJumpState));
+            }
+            else if ((owner.IsOnWall(Vector2.left) || owner.IsOnWall(Vector2.right)))
             {
                 stateMachine.ChangeState(typeof(PlayerWallState));
             }

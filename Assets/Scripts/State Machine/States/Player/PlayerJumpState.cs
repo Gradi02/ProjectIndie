@@ -5,6 +5,8 @@ public class PlayerJumpState : StateBase<PlayerController>
     private const float TIME_TO_CHECK_CONDITIONS = 0.1f;
     private float jumpHoldTimer;
     private bool jumpKeyReleasedDuringJumpLogic;
+    private float wallEnterTime = 0;
+    private bool inWall = false;
 
     public override void Enter()
     {
@@ -37,6 +39,17 @@ public class PlayerJumpState : StateBase<PlayerController>
     {
         base.Execute();
 
+        if ((owner.IsOnWall(Vector2.left) || owner.IsOnWall(Vector2.right)) && !inWall)
+        {
+            wallEnterTime = Time.time;
+            inWall = true;
+        }
+        if(inWall && !owner.IsOnWall(Vector2.left) && !owner.IsOnWall(Vector2.right))
+        {
+            inWall = false;
+        }
+
+
         if (inputHandler.moveInput.x < -0.01f)
         {
             owner.spriteRenderer.flipX = true;
@@ -56,7 +69,7 @@ public class PlayerJumpState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
-        else if(inputHandler.jumpPressed && owner.jumpsRemaining > 0 && !owner.dashUsed)
+        else if(inputHandler.jumpPressed && owner.jumpsRemaining > 0)
         {
             stateMachine.ChangeState(typeof(PlayerExtraJumpState));
         }
@@ -69,7 +82,7 @@ public class PlayerJumpState : StateBase<PlayerController>
         if (timeInThisState < TIME_TO_CHECK_CONDITIONS) return;
 
         // SprawdŸ warunki przejœcia
-        if ((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < 0f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0f))
+        if (((owner.IsOnWall(Vector2.left) && inputHandler.moveInput.x < 0f) || (owner.IsOnWall(Vector2.right) && inputHandler.moveInput.x > 0f)) && (Time.time - wallEnterTime) < 0.2f)
         {
             stateMachine.ChangeState(typeof(PlayerWallState));
         }
@@ -100,7 +113,31 @@ public class PlayerJumpState : StateBase<PlayerController>
 
         if (inputHandler.jumpHeld && !jumpKeyReleasedDuringJumpLogic && jumpHoldTimer < owner.maxJumpHoldTime)
         {
-            owner.rb.AddForce(Vector2.up * owner.additionalJumpForce * Time.fixedDeltaTime, ForceMode2D.Impulse);
+            float currentAppliedForce;
+            float baseAdditionalForce = owner.additionalJumpForce;
+
+            if (jumpHoldTimer < owner.jumpAscentAccelerationDuration)
+            {
+                currentAppliedForce = baseAdditionalForce * owner.jumpAscentAccelerationFactor;
+            }
+            else
+            {
+                float decelerationPhaseDuration = owner.maxJumpHoldTime - owner.jumpAscentAccelerationDuration;
+
+                if (decelerationPhaseDuration <= 0.001f)
+                {
+                    currentAppliedForce = baseAdditionalForce * owner.jumpHoldEndForceMultiplier;
+                }
+                else
+                {
+                    float timeIntoDecelerationPhase = jumpHoldTimer - owner.jumpAscentAccelerationDuration;
+                    float progressInDecelerationPhase = Mathf.Clamp01(timeIntoDecelerationPhase / decelerationPhaseDuration);
+
+                    currentAppliedForce = Mathf.Lerp(baseAdditionalForce, baseAdditionalForce * owner.jumpHoldEndForceMultiplier, progressInDecelerationPhase);
+                }
+            }
+
+            owner.rb.AddForce(Vector2.up * currentAppliedForce * Time.fixedDeltaTime, ForceMode2D.Impulse);
             jumpHoldTimer += Time.fixedDeltaTime;
         }
     }

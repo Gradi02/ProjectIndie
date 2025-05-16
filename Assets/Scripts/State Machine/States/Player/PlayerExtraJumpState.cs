@@ -89,7 +89,31 @@ public class PlayerExtraJumpState : StateBase<PlayerController>
 
         if (inputHandler.jumpHeld && !jumpKeyReleasedDuringJumpLogic && jumpHoldTimer < owner.maxJumpHoldTime)
         {
-            owner.rb.AddForce(Vector2.up * owner.additionalJumpForce * Time.fixedDeltaTime, ForceMode2D.Impulse);
+            float currentAppliedForce;
+            float baseAdditionalForce = owner.additionalJumpForce;
+
+            if (jumpHoldTimer < owner.jumpAscentAccelerationDuration)
+            {
+                currentAppliedForce = baseAdditionalForce * owner.jumpAscentAccelerationFactor;
+            }
+            else
+            {
+                float decelerationPhaseDuration = owner.maxJumpHoldTime - owner.jumpAscentAccelerationDuration;
+
+                if (decelerationPhaseDuration <= 0.001f)
+                {
+                    currentAppliedForce = baseAdditionalForce * owner.jumpHoldEndForceMultiplier;
+                }
+                else
+                {
+                    float timeIntoDecelerationPhase = jumpHoldTimer - owner.jumpAscentAccelerationDuration;
+                    float progressInDecelerationPhase = Mathf.Clamp01(timeIntoDecelerationPhase / decelerationPhaseDuration);
+
+                    currentAppliedForce = Mathf.Lerp(baseAdditionalForce, baseAdditionalForce * owner.jumpHoldEndForceMultiplier, progressInDecelerationPhase);
+                }
+            }
+
+            owner.rb.AddForce(Vector2.up * currentAppliedForce * Time.fixedDeltaTime, ForceMode2D.Impulse);
             jumpHoldTimer += Time.fixedDeltaTime;
         }
     }

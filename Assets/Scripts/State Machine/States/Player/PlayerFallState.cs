@@ -46,7 +46,7 @@ public class PlayerFallState : StateBase<PlayerController>
         {
             if(owner.jumpsRemaining == owner.maxJumps && owner.coyoteTimer > 0f)
                 stateMachine.ChangeState(typeof(PlayerJumpState));
-            else if(owner.jumpsRemaining > 0 && !owner.dashUsed)
+            else if(owner.jumpsRemaining > 0)
                 stateMachine.ChangeState(typeof(PlayerExtraJumpState));
         }
         else if (owner.IsGrounded())

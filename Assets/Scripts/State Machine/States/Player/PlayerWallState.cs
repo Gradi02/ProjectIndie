@@ -3,13 +3,12 @@ using UnityEngine;
 public class PlayerWallState : StateBase<PlayerController>
 {
     private Vector2 wallDirection;
-    private float wallHoldTimer;
     private float wallSlideSpeed = 0;
 
     private const float MIN_WALL_HOLD_INPUT_THRESHOLD = 0.1f;
-    private const float WALL_START_SLIDE_SPEED = 1.5f;
-    private const float WALL_SLIDE_SPEED_FORCE = 0.02f;
-    private const float WALL_MAX_SLIDE_SPEED = 10f;
+    private const float WALL_START_SLIDE_SPEED = 2f;
+    private const float WALL_SLIDE_SPEED_FORCE = 0.03f;
+    private const float WALL_MAX_SLIDE_SPEED = 15f;
 
     public override void Enter()
     {
@@ -55,7 +54,31 @@ public class PlayerWallState : StateBase<PlayerController>
         base.Execute();
 
 
-        if (inputHandler.jumpPressed)
+        // 1. Sprawdzenie, czy gracz chce siê odczepiæ, id¹c w przeciwnym kierunku
+        bool wantsToDetachByMovingAway = false;
+        if (wallDirection == Vector2.left && inputHandler.moveInput.x > MIN_WALL_HOLD_INPUT_THRESHOLD)
+        {
+            wantsToDetachByMovingAway = true;
+        }
+        else if (wallDirection == Vector2.right && inputHandler.moveInput.x < -MIN_WALL_HOLD_INPUT_THRESHOLD)
+        {
+            wantsToDetachByMovingAway = true;
+        }
+
+        if (wantsToDetachByMovingAway)
+        {
+            stateMachine.ChangeState(typeof(PlayerFallState));
+            return;
+        }
+
+
+
+        // 2. pozostale warunki
+        if (inputHandler.attackTrigger)
+        {
+            stateMachine.ChangeState(typeof(PlayerAttackState));
+        }
+        else if (inputHandler.jumpPressed)
         {
             owner.wallDirFlag = wallDirection;
             stateMachine.ChangeState(typeof(PlayerJumpState));
