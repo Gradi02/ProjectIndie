@@ -53,7 +53,7 @@ public class PlayerWalkState : StateBase<PlayerController>
         {
             stateMachine.ChangeState(typeof(PlayerJumpState));
         }
-        else if (owner.rb.linearVelocity.magnitude < MIN_MOVEMENT_THRESHOLD)                                                                             
+        else if (Mathf.Abs(owner.rb.linearVelocity.x) < MIN_MOVEMENT_THRESHOLD)                                                                             
         {
             stateMachine.ChangeState(typeof(PlayerIdleState));
         }
