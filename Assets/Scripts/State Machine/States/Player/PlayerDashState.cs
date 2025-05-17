@@ -57,7 +57,7 @@ public class PlayerDashState : StateBase<PlayerController>
             // Dash siê zakoñczy³, sprawdŸ warunki przejœcia
             if (inputHandler.attackTrigger)
             {
-                stateMachine.ChangeState(typeof(PlayerAttackState));
+                stateMachine.ChangeState(typeof(PlayerAirSlashState));
             }
             else if (inputHandler.jumpPressed && owner.jumpsRemaining > 0)
             {

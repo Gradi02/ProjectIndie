@@ -8,6 +8,7 @@ public class StateMachine<T> where T : MonoBehaviour
     public StateBase<T> currentState { get; private set; }
     private Dictionary<Type, StateBase<T>> availableStates;
     private T ownerContext;
+    public StateBase<T> nextState { get; private set; }
 
 
     public StateMachine(T owner, IEnumerable<StateBase<T>> stateComponents)
@@ -87,8 +88,10 @@ public class StateMachine<T> where T : MonoBehaviour
 
         if (availableStates.TryGetValue(newStateType, out StateBase<T> newState))
         {
+            nextState = newState;
             currentState?.Exit();
             currentState = newState;
+            nextState = null;
             currentState.Enter();
         }
         else

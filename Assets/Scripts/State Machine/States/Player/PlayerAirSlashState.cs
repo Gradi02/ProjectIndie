@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerAttackState : StateBase<PlayerController>
+public class PlayerAirSlashState : StateBase<PlayerController>
 {
     private Vector2 attackDirection;
     private float stateTimer;          // Czas trwania ca³ego stanu ataku
@@ -16,26 +16,31 @@ public class PlayerAttackState : StateBase<PlayerController>
     {
         base.Enter();
 
+        // WA¯NE: Sprawdzenie, czy atak mo¿e byæ wykonany (owner.IsAirSlashReady()),
+        // powinno idealnie odbywaæ siê w stanie, który PRZECHODZI DO PlayerAirSlashState,
+        // ZANIM wywo³a stateMachine.ChangeState().
+        // Jeœli ten stan jest aktywowany, zak³adamy, ¿e warunek cooldownu zosta³ ju¿ sprawdzony.
+
+        // Aktywuj standardowy cooldown dla tego ataku
+        owner.TriggerAirSlashCooldown();
+
         // Odtwórz animacjê ataku
-        // Jeœli masz dedykowan¹ zmienn¹ na klip:
-        // if (attackAnimationClip != null) owner.animator.Play(attackAnimationClip.name);
-        // Jeœli nazwa klipu jest sta³a lub ustawiana w `clip` z StateBase:
         if (clip != null)
-            owner.animator.Play(clip.name); // Upewnij siê, ¿e 'clip' jest przypisany w inspektorze do tego stanu
+            owner.animator.Play(clip.name);
         else
             Debug.LogWarning($"Animation clip for {this.GetType().Name} is null!");
 
         // Ustal kierunek ataku
-        if (inputHandler.moveInput.sqrMagnitude > 0.1f) // Jeœli gracz u¿ywa prawego analoga/myszy
+        if (inputHandler.moveInput.sqrMagnitude > 0.1f)
         {
             attackDirection = inputHandler.moveInput.normalized;
         }
-        else // W przeciwnym razie, atakuj w kierunku, w którym gracz jest zwrócony
+        else
         {
             attackDirection = owner.spriteRenderer.flipX ? Vector2.left : Vector2.right;
         }
 
-        // Obróæ sprite'a (tylko horyzontalnie dla prostoty, pe³ne 360 wymaga³oby obrotu transform)
+        // Obróæ sprite'a
         if (attackDirection.x < -0.01f)
         {
             owner.spriteRenderer.flipX = true;
@@ -46,16 +51,15 @@ public class PlayerAttackState : StateBase<PlayerController>
         }
 
         // Zastosuj pocz¹tkowy "dash"
-        owner.rb.linearVelocity = attackDirection * owner.attackDashForce;
+        owner.rb.linearVelocity = attackDirection * owner.attackDashForce; // U¿ywam linearVelocity zgodnie z oryginalnym kodem
 
         // Inicjalizuj timery
         stateTimer = owner.attackStateDuration;
         dashMovementTimer = owner.attackDashDuration;
-        knockbackMovementTimer = 0f; // Aktywowany tylko po trafieniu
+        knockbackMovementTimer = 0f;
 
         hasHitEnemyThisAttack = false;
 
-        // Wykonaj pierwsze sprawdzenie trafienia (mo¿e byæ pomocne dla szybkich ataków)
         CheckForHit();
     }
 
@@ -67,41 +71,31 @@ public class PlayerAttackState : StateBase<PlayerController>
         if (dashMovementTimer > 0) dashMovementTimer -= Time.deltaTime;
         if (knockbackMovementTimer > 0) knockbackMovementTimer -= Time.deltaTime;
 
-
-        // Jeœli trwa odepchniêcie gracza, nie pozwól na inny ruch
         if (knockbackMovementTimer > 0)
         {
-            // Prêdkoœæ zosta³a ju¿ ustawiona w CheckForHit()
-            // Mo¿na by tu dodaæ np. spowalnianie odepchniêcia, jeœli nie jest to sta³a prêdkoœæ
+            // Prêdkoœæ odepchniêcia ustawiona w CheckForHit()
         }
-        // Jeœli trwa dash ataku (i nie ma odepchniêcia)
         else if (dashMovementTimer > 0)
         {
-            // Prêdkoœæ dasha zosta³a ustawiona w Enter(). Mo¿na j¹ tu modyfikowaæ, np. spowalniaæ.
-            // Dla prostoty, zak³adamy, ¿e jest to sta³y impuls.
-            // owner.rb.velocity = attackDirection * owner.attackDashForce; // Utrzymanie prêdkoœci dasha
+            // Utrzymanie prêdkoœci dasha, jeœli potrzebne, lub pozwolenie na naturalne wygaszenie
+            // owner.rb.linearVelocity = attackDirection * owner.attackDashForce; 
         }
-        // Jeœli dash siê skoñczy³, ale stan ataku trwa (np. na dokoñczenie animacji)
-        // i nie ma odepchniêcia.
         else if (dashMovementTimer <= 0 && knockbackMovementTimer <= 0)
         {
-            // Zredukuj prêdkoœæ gracza, chyba ¿e grawitacja ma dzia³aæ normalnie.
-            // Dla prostoty, pozwalamy grawitacji dzia³aæ, jeœli gracz jest w powietrzu.
-            // Jeœli gracz jest na ziemi, mo¿na go zatrzymaæ lub spowolniæ.
             if (owner.IsGrounded())
             {
+                // U¿ywam linearVelocity i acceleration zgodnie z oryginalnym kodem
                 owner.rb.linearVelocity = new Vector2(Mathf.MoveTowards(owner.rb.linearVelocity.x, 0, owner.acceleration * Time.deltaTime), owner.rb.linearVelocity.y);
             }
+            // W powietrzu, grawitacja powinna dzia³aæ normalnie.
         }
 
-        // SprawdŸ trafienie, jeœli jeszcze nie trafiono w tym ataku i nie jesteœmy odpychani
         if (!hasHitEnemyThisAttack && knockbackMovementTimer <= 0f)
         {
             CheckForHit();
         }
 
-        // Warunek zakoñczenia stanu ataku
-        if (stateTimer <= 0f && knockbackMovementTimer <= 0f) // Zakoñcz tylko, gdy odepchniêcie te¿ siê skoñczy³o
+        if (stateTimer <= 0f && knockbackMovementTimer <= 0f)
         {
             TransitionToNextState();
         }
@@ -109,10 +103,8 @@ public class PlayerAttackState : StateBase<PlayerController>
 
     private void CheckForHit()
     {
-        // Kalkulacja punktu, z którego wychodzi hitbox ataku
         Vector2 attackOrigin = (Vector2)owner.transform.position + attackDirection * owner.attackHitboxOffset;
 
-        // Wizualizacja hitboxa w edytorze (opcjonalnie)
 #if UNITY_EDITOR
         Debug.DrawRay(attackOrigin - Vector2.up * owner.attackHitboxRadius, Vector2.up * 2 * owner.attackHitboxRadius, Color.red, 0.1f);
         Debug.DrawRay(attackOrigin - Vector2.right * owner.attackHitboxRadius, Vector2.right * 2 * owner.attackHitboxRadius, Color.red, 0.1f);
@@ -123,23 +115,24 @@ public class PlayerAttackState : StateBase<PlayerController>
         foreach (Collider2D enemy in hitEnemies)
         {
             Debug.Log("Trafiono: " + enemy.name);
-            // Tutaj logika zadawania obra¿eñ przeciwnikowi, np.:
             // enemy.GetComponent<EnemyHealth>()?.TakeDamage(damageAmount);
 
-            if (!hasHitEnemyThisAttack) // Upewnij siê, ¿e odepchniêcie nast¹pi tylko raz
+            if (!hasHitEnemyThisAttack)
             {
                 hasHitEnemyThisAttack = true;
 
-                // Odepchnij gracza w przeciwnym kierunku do ataku
                 Vector2 knockbackDir = -attackDirection;
-                owner.rb.linearVelocity = knockbackDir * owner.playerKnockbackOnHitForce;
-                knockbackMovementTimer = owner.playerKnockbackDuration; // Ustaw czas trwania ruchu odepchniêcia
-
-                // Zresetuj timer dasha, bo odepchniêcie ma priorytet
+                float actualKnockbackForce = owner.playerKnockbackOnHitForce * owner.currentPogoForceModifier;
+                owner.rb.linearVelocity = knockbackDir * actualKnockbackForce;
+                owner.currentPogoForceModifier = Mathf.Max(owner.minPogoForceModifier, owner.currentPogoForceModifier * owner.pogoForceReductionFactor);
+                knockbackMovementTimer = owner.playerKnockbackDuration;
                 dashMovementTimer = 0f;
 
-                // Mo¿na dodaæ efekty wizualne/dŸwiêkowe trafienia
-                break; // Zwykle chcemy przetworzyæ tylko jedno trafienie na "pchniêcie"
+                // *** KLUCZOWA ZMIANA DLA POGO JUMP ***
+                // Po trafieniu wroga, aktywuj krótszy cooldown, aby umo¿liwiæ "pogojump"
+                owner.TriggerAirSlashPogoReset();
+
+                break;
             }
         }
     }
@@ -148,8 +141,6 @@ public class PlayerAttackState : StateBase<PlayerController>
     {
         if (owner.IsGrounded())
         {
-            // Jeœli jest jakiœ ruch, przejdŸ do Walk, inaczej do Idle
-            // Dla uproszczenia, zawsze do Idle po ataku na ziemi, chyba ¿e gracz od razu zacznie siê ruszaæ
             if (Mathf.Abs(inputHandler.moveInput.x) > 0.01f)
             {
                 stateMachine.ChangeState(typeof(PlayerWalkState));
@@ -168,13 +159,6 @@ public class PlayerAttackState : StateBase<PlayerController>
     public override void Exit()
     {
         base.Exit();
-        // Mo¿na tu zresetowaæ czêœæ prêdkoœci, jeœli atak nie powinien przenosiæ pêdu
-        // Np. jeœli atak zakoñczy³ siê w powietrzu, ale nie chcemy, ¿eby gracz lecia³ dalej z si³¹ dasha
-        if (knockbackMovementTimer <= 0f && dashMovementTimer <= 0f) // Jeœli nie jesteœmy w trakcie odepchniêcia lub dasha przy wyjœciu
-        {
-            // owner.rb.velocity = new Vector2(0, owner.rb.velocity.y); // Zachowaj tylko prêdkoœæ pionow¹
-        }
-        // Upewnij siê, ¿e jeœli gracz wyl¹duje pod koniec stanu ataku, grawitacja jest poprawnie aplikowana
-        // lub przechodzi do stanu Grounded poprawnie. TransitionToNextState() powinno to obs³u¿yæ.
+        // Dodatkowe czyszczenie przy wyjœciu, jeœli potrzebne
     }
 }

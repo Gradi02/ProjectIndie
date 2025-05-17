@@ -11,34 +11,29 @@ public class PlayerInputHandler : MonoBehaviour
 
     [Header("Action Name References")]
     [SerializeField] private string move = "Move";
-    [SerializeField] private string look = "Look";
     [SerializeField] private string jump = "Jump";
-    [SerializeField] private string crouch = "Crouch";
     [SerializeField] private string interact = "Interact";
     [SerializeField] private string dash = "Dash";
     [SerializeField] private string attack = "Attack";
+    [SerializeField] private string block = "Block";
 
     private InputAction moveAction;
-    private InputAction lookAction;
     private InputAction jumpAction;
-    private InputAction crouchAction;
     private InputAction interactAction;
     private InputAction dashAction;
     private InputAction attackAction;
+    private InputAction blockAction;
 
     public Vector2 moveInput { get; private set; }
-    public Vector2 lookInput { get; private set; }
     public bool jumpPressed { get; private set; }
     public bool jumpHeld { get; private set; }
     public bool jumpReleased { get; private set; }
-    public bool crouchPressed { get; private set; }
-    public bool crouchHeld { get; private set; }
-    public bool crouchReleased { get; private set; }
     public bool interactTrigger { get; private set; }
     public bool dashPressed { get; private set; }
     public bool dashHeld { get; private set; }
     public bool dashReleased { get; private set; }
     public bool attackTrigger { get; private set; }
+    public bool blockTrigger { get; private set; }
 
 
     public static PlayerInputHandler Instance { get; private set; }
@@ -59,12 +54,11 @@ public class PlayerInputHandler : MonoBehaviour
         }
 
         moveAction = playerControls.FindActionMap(actionMapName).FindAction(move);
-        lookAction = playerControls.FindActionMap(actionMapName).FindAction(look);
         jumpAction = playerControls.FindActionMap(actionMapName).FindAction(jump);
-        crouchAction = playerControls.FindActionMap(actionMapName).FindAction(crouch);
         interactAction = playerControls.FindActionMap(actionMapName).FindAction(interact);
         dashAction = playerControls.FindActionMap(actionMapName).FindAction(dash);
         attackAction = playerControls.FindActionMap(actionMapName).FindAction(attack);
+        blockAction = playerControls.FindActionMap(actionMapName).FindAction(block);
 
         RegisterInputActions();
     }
@@ -74,12 +68,7 @@ public class PlayerInputHandler : MonoBehaviour
         moveAction.performed += context => moveInput = context.ReadValue<Vector2>();
         moveAction.canceled += context => moveInput = Vector2.zero;
 
-        lookAction.performed += context => lookInput = context.ReadValue<Vector2>();
-        lookAction.canceled += context => lookInput = Vector2.zero;
-
         //Skok przenioslem do update
-
-        //Crouch tez w update
 
         interactAction.performed += context => interactTrigger = true;
         interactAction.canceled += context => interactTrigger = false;
@@ -87,29 +76,28 @@ public class PlayerInputHandler : MonoBehaviour
         attackAction.performed += context => attackTrigger = true;
         attackAction.canceled += context => attackTrigger = false;
 
-        //update
+        blockAction.performed += context => blockTrigger = true;
+        blockAction.canceled += context => blockTrigger = false;
     }
 
     private void OnEnable()
     {
         moveAction.Enable();
-        lookAction.Enable();
         jumpAction.Enable();
-        crouchAction.Enable();
         interactAction.Enable();
         dashAction.Enable();
         attackAction.Enable();
+        blockAction.Enable();
     }
 
     private void OnDisable()
     {
         moveAction.Disable();
-        lookAction.Disable();
         jumpAction.Disable();
-        crouchAction.Disable();
         interactAction.Disable();
         dashAction.Disable();
         attackAction.Disable();
+        blockAction.Disable();
     }
 
     private void Update()
@@ -127,20 +115,7 @@ public class PlayerInputHandler : MonoBehaviour
             jumpReleased = false;
         }
 
-        if(crouchAction != null)
-        {
-            crouchPressed = crouchAction.WasPerformedThisFrame();
-            crouchHeld = crouchAction.IsPressed();
-            crouchReleased = crouchAction.WasReleasedThisFrame();
-        }
-        else
-        {
-            crouchPressed = false;
-            crouchHeld = false;
-            crouchReleased = false;
-        }
-
-        if (crouchAction != null)
+        if (dashAction != null)
         {
             dashPressed = dashAction.WasPerformedThisFrame();
             dashHeld = dashAction.IsPressed();

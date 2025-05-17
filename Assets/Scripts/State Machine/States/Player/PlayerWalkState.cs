@@ -36,12 +36,31 @@ public class PlayerWalkState : StateBase<PlayerController>
         }
 
         // Sprawdü warunki przejúcia
-        if (inputHandler.attackTrigger)
+        if (owner.TryConsumeAttackInputForCombo() && owner.IsGrounded() && !owner.isAttacking)
         {
-            stateMachine.ChangeState(typeof(PlayerAttackState));
-            return;
+            if (owner.currentComboStep == 0)
+            {
+                stateMachine.ChangeState(typeof(PlayerGroundAttack1State));
+            }
+            else if (owner.currentComboStep == 1 && Time.time < owner.lastAttackPhaseEndTime + owner.comboContinueWindow)
+            {
+                stateMachine.ChangeState(typeof(PlayerGroundAttack2State));
+            }
+            else if (owner.currentComboStep == 2 && Time.time < owner.lastAttackPhaseEndTime + owner.comboContinueWindow)
+            {
+                stateMachine.ChangeState(typeof(PlayerGroundAttack3State));
+            }
+            else
+            {
+                owner.ResetCombo();
+                stateMachine.ChangeState(typeof(PlayerGroundAttack1State));
+            }
         }
-        else if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        else if (inputHandler.blockTrigger && owner.IsGrounded())
+        {
+            stateMachine.ChangeState(typeof(PlayerBlockState));
+        }
+        else if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.moveInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }

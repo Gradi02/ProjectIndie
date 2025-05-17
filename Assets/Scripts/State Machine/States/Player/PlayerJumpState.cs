@@ -65,7 +65,7 @@ public class PlayerJumpState : StateBase<PlayerController>
             jumpKeyReleasedDuringJumpLogic = true;
         }
 
-        if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.moveInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
@@ -75,8 +75,11 @@ public class PlayerJumpState : StateBase<PlayerController>
         }
         else if (inputHandler.attackTrigger)
         {
-            stateMachine.ChangeState(typeof(PlayerAttackState));
-            return;
+            if (!owner.IsGrounded() && owner.IsAirSlashReady())
+            {
+                stateMachine.ChangeState(typeof(PlayerAirSlashState));
+                return;
+            }
         }
 
         if (timeInThisState < TIME_TO_CHECK_CONDITIONS) return;

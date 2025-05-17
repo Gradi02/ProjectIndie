@@ -32,9 +32,10 @@ public class PlayerFallState : StateBase<PlayerController>
         // Sprawdü warunki przejúcia
         if (inputHandler.attackTrigger)
         {
-            stateMachine.ChangeState(typeof(PlayerAttackState));
+            if(!owner.IsGrounded() && owner.IsAirSlashReady())
+                stateMachine.ChangeState(typeof(PlayerAirSlashState));
         }
-        else if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        else if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.moveInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }

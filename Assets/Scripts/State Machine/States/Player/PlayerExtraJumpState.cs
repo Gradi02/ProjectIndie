@@ -44,14 +44,17 @@ public class PlayerExtraJumpState : StateBase<PlayerController>
             jumpKeyReleasedDuringJumpLogic = true;
         }
 
-        if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.lookInput != Vector2.zero)
+        if (!owner.dashUsed && inputHandler.dashPressed && inputHandler.moveInput != Vector2.zero)
         {
             stateMachine.ChangeState(typeof(PlayerDashState));
         }
         else if (inputHandler.attackTrigger)
         {
-            stateMachine.ChangeState(typeof(PlayerAttackState));
-            return;
+            if (!owner.IsGrounded() && owner.IsAirSlashReady())
+            {
+                stateMachine.ChangeState(typeof(PlayerAirSlashState));
+                return;
+            }
         }
 
 

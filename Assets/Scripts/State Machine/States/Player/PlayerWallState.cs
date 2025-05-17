@@ -54,6 +54,7 @@ public class PlayerWallState : StateBase<PlayerController>
         base.Execute();
 
 
+
         // 1. Sprawdzenie, czy gracz chce siê odczepiæ, id¹c w przeciwnym kierunku
         bool wantsToDetachByMovingAway = false;
         if (wallDirection == Vector2.left && inputHandler.moveInput.x > MIN_WALL_HOLD_INPUT_THRESHOLD)
@@ -76,7 +77,7 @@ public class PlayerWallState : StateBase<PlayerController>
         // 2. pozostale warunki
         if (inputHandler.attackTrigger)
         {
-            stateMachine.ChangeState(typeof(PlayerAttackState));
+            stateMachine.ChangeState(typeof(PlayerAirSlashState));
         }
         else if (inputHandler.jumpPressed)
         {
