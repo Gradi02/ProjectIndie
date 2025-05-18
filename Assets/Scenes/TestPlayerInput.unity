@@ -239,7 +239,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb55b1a78a0a12a48a916a1f0b9d6c3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 7400000, guid: a06034f7fb5fe374a9b8478307c5a72d, type: 2}
+  clip: {fileID: 7400000, guid: ae2e0092fcba48c44938b3d804f23cff, type: 2}
 --- !u!1 &210318623
 GameObject:
   m_ObjectHideFlags: 0
@@ -284,7 +284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9484297dfe33f92478d7e6329ce8a779, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 7400000, guid: 3875e5471cf85f049b91ce99aa3e1759, type: 2}
+  clip: {fileID: 7400000, guid: 63245807a6122dc418c6c230ba08ad4f, type: 2}
 --- !u!1 &440188835
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,7 +329,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01689d6f213c6934290a34c23fa27077, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 7400000, guid: 415bbff642d5453408465479741f9bea, type: 2}
+  clip: {fileID: 7400000, guid: 84f80ff7672cd00418edf70568f52729, type: 2}
 --- !u!1 &476045196
 GameObject:
   m_ObjectHideFlags: 0
@@ -644,6 +644,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clip: {fileID: 0}
+  blockDuration: 0.5
 --- !u!1 &837552743
 GameObject:
   m_ObjectHideFlags: 0
@@ -688,8 +689,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0ed64d9a6186784e8d21ffb679ca9e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 0}
-  attackActiveDuration: 0.6
+  clip: {fileID: 1254855225811445056, guid: f3bd0d73eff490d4dac6f24a86dfe6ef, type: 3}
+  attackActiveDuration: 0.4
 --- !u!1 &877674277
 GameObject:
   m_ObjectHideFlags: 0
@@ -771,6 +772,7 @@ MonoBehaviour:
   lastAttackPhaseEndTime: 0
   attackInputBufferTime: 0.1
   isAttacking: 0
+  isInvulnerable: 0
 --- !u!95 &877674279
 Animator:
   serializedVersion: 7
@@ -837,7 +839,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1, y: 1.8}
   m_EdgeRadius: 0
 --- !u!50 &877674281
 Rigidbody2D:
@@ -1122,7 +1124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 943a705bd89e6814589fe7fe490a0aa6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 7400000, guid: d76da75890d624d40bda4ad98413a26c, type: 2}
+  clip: {fileID: 7400000, guid: 7c8144a016d1db348a02ab4646838b10, type: 2}
 --- !u!1 &1123712087
 GameObject:
   m_ObjectHideFlags: 0
@@ -1301,7 +1303,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed0257c22ceb79c4db3c8eda476e7916, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 7400000, guid: 415bbff642d5453408465479741f9bea, type: 2}
+  clip: {fileID: 7400000, guid: 84f80ff7672cd00418edf70568f52729, type: 2}
 --- !u!1 &1292198807
 GameObject:
   m_ObjectHideFlags: 0
@@ -1346,8 +1348,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad256b63114444e4589277c2ef799707, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 0}
-  attackActiveDuration: 0.6
+  clip: {fileID: -4841054119768082656, guid: f3bd0d73eff490d4dac6f24a86dfe6ef, type: 3}
+  attackActiveDuration: 0.4
 --- !u!1 &1444000171
 GameObject:
   m_ObjectHideFlags: 0
@@ -4084,7 +4086,7 @@ Transform:
   m_GameObject: {fileID: 1850320357}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalPosition: {x: 0, y: -0.9, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4181,8 +4183,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7f05121b38c8754e824845bc88d3472, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 0}
-  attackActiveDuration: 0.6
+  clip: {fileID: -4437361757129366259, guid: f3bd0d73eff490d4dac6f24a86dfe6ef, type: 3}
+  attackActiveDuration: 0.3
 --- !u!1 &1902984051
 GameObject:
   m_ObjectHideFlags: 0
@@ -56144,7 +56146,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f1efe7214436a945a9ac00dcaa7c2bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clip: {fileID: 7400000, guid: 85205989d4e05e442a2cc62615435017, type: 2}
+  clip: {fileID: 7400000, guid: 1596101350a3017439ff8a4edbb99969, type: 2}
 --- !u!1 &1973993160
 GameObject:
   m_ObjectHideFlags: 0
